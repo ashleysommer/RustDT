@@ -15,16 +15,16 @@ import melnorme.lang.tooling.ast.SourceRange;
 
 
 /**
- * A structure element is a lightweight structure describing a top-level element 
+ * A structure element is a lightweight structure describing a top-level element
  * obtained from a source file (compilation unit).
- * Example: functions, classes, top level variables. etc. 
+ * Example: functions, classes, top level variables. etc.
  */
 public interface IStructureElement extends IStructureElementContainer {
 	
 	/** @return the name of this element. */
 	String getName();
 	
-	/** @return the source range of this element, that is, 
+	/** @return the source range of this element, that is,
 	 * the range in the source file that this elements corresponds to. */
 	SourceRange getSourceRange();
 	
@@ -47,6 +47,6 @@ public interface IStructureElement extends IStructureElementContainer {
 	void setParent(IStructureElementContainer parent);
 	
 	/** @return the containing {@link ISourceFileStructure} of this element. Can be null. */
-	ISourceFileStructure getContainingFileStructure();
+	IStructureElementContainer getContainingFileStructure();
 	
 }

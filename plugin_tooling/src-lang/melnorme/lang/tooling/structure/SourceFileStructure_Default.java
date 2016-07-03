@@ -14,22 +14,17 @@ import static melnorme.utilbox.core.Assert.AssertNamespace.assertNotNull;
 import static melnorme.utilbox.core.CoreUtil.areEqual;
 import static melnorme.utilbox.core.CoreUtil.nullToEmpty;
 
-import java.util.Optional;
-
 import melnorme.lang.tooling.common.ParserError;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.misc.HashcodeUtil;
-import melnorme.utilbox.misc.Location;
 
-public abstract class SourceFileStructure_Default extends AbstractStructureContainer implements ISourceFileStructure {
+public abstract class SourceFileStructure_Default extends AbstractStructureContainer {
 	
-	protected final Location location;
 	protected final Indexable<ParserError> parserProblems;
 	
-	public SourceFileStructure_Default(Location location, Indexable<StructureElement> children, 
+	public SourceFileStructure_Default(Indexable<StructureElement> children,
 			Indexable<ParserError> parserProblems) {
 		super(children);
-		this.location = location;
 		this.parserProblems = nullToEmpty(parserProblems);
 	}
 	
@@ -40,32 +35,21 @@ public abstract class SourceFileStructure_Default extends AbstractStructureConta
 		
 		SourceFileStructure other = (SourceFileStructure) obj;
 		
-		return 
-			areEqual(location, other.location) &&
-			areEqual(children, other.children);
+		return
+				areEqual(children, other.children);
 	}
 	
 	@Override
 	public int hashCode() {
-		return HashcodeUtil.combinedHashCode(location, children);
+		return HashcodeUtil.combinedHashCode(children);
 	}
 	
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + (location == null ? "" : " " + location); 
+		return getClass().getSimpleName();
 	}
 	
 	/* -----------------  ----------------- */
-	
-	@Override
-	public Optional<Location> getLocation(IStructureElement structureElement) {
-		return Optional.ofNullable(location);
-	}
-	
-	@Override
-	public String getModuleName() {
-		return location == null ? null : location.getPath().getFileName().toString();
-	}
 	
 	public Indexable<ParserError> getParserProblems() {
 		return parserProblems;

@@ -38,10 +38,10 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 	protected IStructureElementContainer parent;
 	
 	public StructureElement_Default(
-			String name, 
-			SourceRange nameSourceRange, SourceRange sourceRange, 
+			String name,
+			SourceRange nameSourceRange, SourceRange sourceRange,
 			StructureElementKind elementKind,
-			ElementAttributes elementAttributes, 
+			ElementAttributes elementAttributes,
 			String type, Indexable<StructureElement> children) {
 		super(children);
 		this.name = assertNotNull(name);
@@ -59,15 +59,15 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 		
 		StructureElement other = (StructureElement) obj;
 		
-		return 
-			areEqual(name, other.name) &&
-			areEqual(nameSourceRange2, other.nameSourceRange2) &&
-			areEqual(sourceRange, other.sourceRange) &&
-			areEqual(elementKind, other.elementKind) &&
-			areEqual(elementAttributes, other.elementAttributes) &&
-			areEqual(type, other.type) &&
-			areEqual(children, other.children)
-			;
+		return
+				areEqual(name, other.name) &&
+				areEqual(nameSourceRange2, other.nameSourceRange2) &&
+				areEqual(sourceRange, other.sourceRange) &&
+				areEqual(elementKind, other.elementKind) &&
+				areEqual(elementAttributes, other.elementAttributes) &&
+				areEqual(type, other.type) &&
+				areEqual(children, other.children)
+				;
 	}
 	
 	@Override
@@ -80,10 +80,6 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 		return "ELEM " + name + sourceRange + " " + elementKind + prefixStr(" : ", type) + " " + elementAttributes;
 	}
 	
-	public StructureElement cloneSubTree() {
-		return new StructureElement(name, nameSourceRange2, sourceRange, 
-			elementKind, elementAttributes, type, cloneSubTree(children));
-	}
 	
 	public static ArrayList2<StructureElement> cloneSubTree(Indexable<StructureElement> elements) {
 		ArrayList2<StructureElement> clonedElements = new ArrayList2<>(elements.size());
@@ -139,22 +135,16 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 		this.parent = parent;
 	}
 	
-//	@Override
-//	public String getModuleName() {
-//		IStructureElementContainer parent = getParent();
-//		return parent == null ? null : parent.getModuleName();
-//	}
-	
 	@Override
-	public ISourceFileStructure getContainingFileStructure() {
+	public IStructureElementContainer getContainingFileStructure() {
 		return getFileStructure(this);
 	}
 	
-	public static ISourceFileStructure getFileStructure(IStructureElement element) {
+	public static IStructureElementContainer getFileStructure(IStructureElement element) {
 		IStructureElementContainer parent = element.getParent();
 		
-		if(parent instanceof ISourceFileStructure) {
-			return (ISourceFileStructure) parent;
+		if(parent instanceof IStructureElementContainer) {
+			return parent;
 		} else if (parent instanceof IStructureElement) {
 			return getFileStructure((IStructureElement) parent);
 		} else {

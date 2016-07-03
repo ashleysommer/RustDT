@@ -48,7 +48,7 @@ import melnorme.utilbox.core.CommonException;
 class AnnotationsModelManager {
 	
 	/**
-	 * @param project  
+	 * @param project
 	 */
 	public Indexable<?> getAnnotations(IProject project) {
 		return Indexable.EMPTY_INDEXABLE;
@@ -68,7 +68,7 @@ public class ModelReconcilationTest extends CommonCoreTest {
 		if(fixtureProject != null) {
 			fixtureProject.cleanUp();
 		}
-
+		
 		super.dispose();
 	}
 	
@@ -101,8 +101,8 @@ public class ModelReconcilationTest extends CommonCoreTest {
 			assertTrue(annotationsMgr.getAnnotations(fixtureProject.project).size() == 0);
 			
 			LocationKey locationKey = new LocationKey(location(fileA));
-			StructureModelRegistration reg = sourceModelMgr.connectStructureUpdates(locationKey, helper.getDocument(), 
-				IStructureModelListener.NIL_LISTENER);
+			StructureModelRegistration reg = sourceModelMgr.connectStructureUpdates(locationKey, helper.getDocument(),
+					IStructureModelListener.NIL_LISTENER);
 			
 			// A structure working copy is now connected
 			
@@ -156,7 +156,7 @@ public class ModelReconcilationTest extends CommonCoreTest {
 		
 		protected final IProgressMonitor pm = null;
 		
-		public BufferFixture(ITextFileBufferManager fbm, IPath path, LocationKind locationKind, 
+		public BufferFixture(ITextFileBufferManager fbm, IPath path, LocationKind locationKind,
 				FixtureSourceModelManager sourceModelMgr) throws CoreException {
 			this.path = path;
 			this.locationKind = locationKind;
@@ -187,7 +187,7 @@ public class ModelReconcilationTest extends CommonCoreTest {
 			sourceModelMgr.updateTaskProvider = (structureInfo) -> {
 				sourceModelMgr.updateTaskProvider = null;
 				
-//				String source = structureInfo.document.get();
+				// String source = structureInfo.document.get();
 				
 				return new StructureUpdateTask(structureInfo) {
 					@Override
@@ -197,8 +197,8 @@ public class ModelReconcilationTest extends CommonCoreTest {
 						} catch(InterruptedException e) {
 							throw new OperationCancellation();
 						}
-
-						return new SourceFileStructure(null, null, (Indexable<ParserError>) null);
+						
+						return new SourceFileStructure(null, (Indexable<ParserError>) null);
 					}
 				};
 			};

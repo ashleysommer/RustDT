@@ -11,14 +11,6 @@
 package melnorme.lang.ide.ui.editor.structure;
 
 
-import melnorme.lang.ide.core.EclipseCore;
-import melnorme.lang.ide.core.LangCore;
-import melnorme.lang.ide.ui.LangUIPlugin;
-import melnorme.lang.ide.ui.text.AbstractLangBasicSourceViewerConfiguration;
-import melnorme.lang.ide.ui.views.AbstractFilteredTreePopupControl;
-import melnorme.lang.ide.ui.views.StructureElementLabelProvider;
-import melnorme.lang.tooling.structure.ISourceFileStructure;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IInformationControl;
@@ -28,6 +20,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
 import _org.eclipse.jdt.internal.ui.util.StringMatcher;
+import melnorme.lang.ide.core.EclipseCore;
+import melnorme.lang.ide.core.LangCore;
+import melnorme.lang.ide.ui.LangUIPlugin;
+import melnorme.lang.ide.ui.text.AbstractLangBasicSourceViewerConfiguration;
+import melnorme.lang.ide.ui.views.AbstractFilteredTreePopupControl;
+import melnorme.lang.ide.ui.views.StructureElementLabelProvider;
+import melnorme.lang.tooling.structure.IStructureElementContainer;
 
 public abstract class LangOutlineInformationControl extends AbstractFilteredTreePopupControl {
 	
@@ -54,10 +53,10 @@ public abstract class LangOutlineInformationControl extends AbstractFilteredTree
 	
 	@Override
 	public void setInput(Object information) {
-		ISourceFileStructure structure = null;
+		IStructureElementContainer structure = null;
 		
-		if(information instanceof ISourceFileStructure) {
-			structure = (ISourceFileStructure) information;
+		if(information instanceof IStructureElementContainer) {
+			structure = (IStructureElementContainer) information;
 		}
 		
 		if(structure != null) {

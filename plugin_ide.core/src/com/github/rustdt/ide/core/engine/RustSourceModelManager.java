@@ -71,11 +71,10 @@ public class RustSourceModelManager extends SourceModelManager {
 					SourceFileStructure previousStructure = structureInfo.getStoredData().getOrNull();
 					if(previousStructure != null) {
 						// Use elements from previous structure:
-						Indexable<StructureElement> previousElements = 
+						Indexable<StructureElement> previousElements =
 								StructureElement.cloneSubTree(previousStructure.getChildren());
 						
-						newStructure = new SourceFileStructure(fileLocation, previousElements, 
-							newStructure.getParserProblems());
+						newStructure = new SourceFileStructure(previousElements, newStructure.getParserProblems());
 					}
 				}
 				GlobalSourceStructure.fileUpdated(newStructure, fileLocation);
@@ -86,20 +85,20 @@ public class RustSourceModelManager extends SourceModelManager {
 			}
 		}
 		
-		protected String getDescribeOutput(String source, Location fileLocation) 
+		protected String getDescribeOutput(String source, Location fileLocation)
 				throws OperationCancellation, CommonException {
 			if(DevelopmentCodeMarkers.TESTS_MODE) {
 				return null;
 			}
 			
 			IProject project = fileLocation == null ? null : ResourceUtils.getProjectFromMemberLocation(fileLocation);
-				Path path = RustSDKPreferences.RAINICORN_PATH2.getDerivedValue(project);
-				
-				ProcessBuilder pb = toolManager.createToolProcessBuilder(project, path);
-				
-				ExternalProcessResult describeResult = toolManager.runEngineTool(pb, source, cm);
-				return describeResult.getStdOutBytes().toString(StringUtil.UTF8);
-				
+			Path path = RustSDKPreferences.RAINICORN_PATH2.getDerivedValue(project);
+			
+			ProcessBuilder pb = toolManager.createToolProcessBuilder(project, path);
+			
+			ExternalProcessResult describeResult = toolManager.runEngineTool(pb, source, cm);
+			return describeResult.getStdOutBytes().toString(StringUtil.UTF8);
+			
 		}
 	}
 	

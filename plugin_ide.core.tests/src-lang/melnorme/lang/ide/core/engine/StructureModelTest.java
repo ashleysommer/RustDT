@@ -20,8 +20,8 @@ import java.util.function.Function;
 import org.eclipse.jface.text.Document;
 import org.junit.Test;
 
-import melnorme.lang.ide.core.engine.SourceModelManager.StructureModelRegistration;
 import melnorme.lang.ide.core.engine.SourceModelManager.StructureInfo;
+import melnorme.lang.ide.core.engine.SourceModelManager.StructureModelRegistration;
 import melnorme.lang.ide.core.engine.SourceModelManager.StructureUpdateTask;
 import melnorme.lang.ide.core.tests.CommonCoreTest;
 import melnorme.lang.tooling.LocationKey;
@@ -29,8 +29,8 @@ import melnorme.lang.tooling.common.ParserError;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.concurrency.OperationCancellation;
-import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.core.Assert.AssertFailedException;
+import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.core.fntypes.OperationCallable;
 import melnorme.utilbox.ownership.StrictDisposable;
 import melnorme.utilbox.tests.TestsWorkingDir;
@@ -50,7 +50,7 @@ public class StructureModelTest extends CommonCoreTest {
 	
 	protected void initializeTestsEngineClient() {
 		fixtureMgr = new FixtureSourceModelManager();
-		mgr = fixtureMgr; 
+		mgr = fixtureMgr;
 		createUpdateTaskCount_EXPECTED = 0;
 	}
 	
@@ -60,8 +60,7 @@ public class StructureModelTest extends CommonCoreTest {
 			super(new DocumentReconcileManager(), new ProblemMarkerUpdater());
 		}
 		
-		public final SourceFileStructure DEFAULT_STRUCTURE = new SourceFileStructure(null, null, 
-			(Indexable<ParserError>) null);
+		public final SourceFileStructure DEFAULT_STRUCTURE = new SourceFileStructure(null, (Indexable<ParserError>) null);
 		
 		public final Function<StructureInfo, StructureUpdateTask> DEFAULT_UPDATE_TASK = (structureInfo) -> {
 			return new StructureUpdateTask(structureInfo) {
@@ -179,11 +178,11 @@ public class StructureModelTest extends CommonCoreTest {
 			} catch(InterruptedException e) {
 				throw new OperationCancellation();
 			}
-			return null;			
+			return null;
 		});
 		
-		StructureModelRegistration registration = mgr.connectStructureUpdates(key, doc, 
-			IStructureModelListener.NIL_LISTENER);
+		StructureModelRegistration registration = mgr.connectStructureUpdates(key, doc,
+				IStructureModelListener.NIL_LISTENER);
 		checkTaskDelta(initialConnect ? 1 : 0);
 		
 		StructureInfo structureInfo = registration.structureInfo;
@@ -201,11 +200,11 @@ public class StructureModelTest extends CommonCoreTest {
 		return registration;
 	}
 	
-	protected void testDisconnectUpdates(LocationKey key, StructureModelRegistration regist, boolean hasOtherConnections) 
+	protected void testDisconnectUpdates(LocationKey key, StructureModelRegistration regist, boolean hasOtherConnections)
 			throws InterruptedException {
 		StructureInfo structureInfo = regist.structureInfo;
 		
-		TestsStructureModelListener listener = 
+		TestsStructureModelListener listener =
 				new TestsStructureModelListener(mgr, structureInfo, hasOtherConnections ? 0 : 1);
 		assertTrue(structureInfo.isStale() == false);
 		try {
@@ -234,7 +233,7 @@ public class StructureModelTest extends CommonCoreTest {
 		protected final StructureInfo structureInfo;
 		protected volatile int expectedChanges;
 		
-		public TestsStructureModelListener(SourceModelManager manager, StructureInfo structureInfo, int expectedChanges) 
+		public TestsStructureModelListener(SourceModelManager manager, StructureInfo structureInfo, int expectedChanges)
 				throws InterruptedException {
 			this.structureInfo = structureInfo;
 			this.expectedChanges = expectedChanges;
@@ -262,7 +261,7 @@ public class StructureModelTest extends CommonCoreTest {
 		
 	}
 	
-	protected void testBasicFlow_Cancellation(StructureModelRegistration registration, Document doc) 
+	protected void testBasicFlow_Cancellation(StructureModelRegistration registration, Document doc)
 			throws InterruptedException {
 		if(fixtureMgr == null)
 			return;
@@ -316,18 +315,18 @@ public class StructureModelTest extends CommonCoreTest {
 		StructureInfo structureInfo = registration.structureInfo;
 		
 		checkCounts();
-		StructureModelRegistration registration2 = mgr.connectStructureUpdates(key, doc, 
-			IStructureModelListener.NIL_LISTENER);
+		StructureModelRegistration registration2 = mgr.connectStructureUpdates(key, doc,
+				IStructureModelListener.NIL_LISTENER);
 		assertTrue(registration2.structureInfo == structureInfo);
 		// Test no extra updates
 		checkCounts();
 		
 		testBasicFlow(key, doc, false);
 		
-		StructureModelRegistration registration_unmanaged = 
+		StructureModelRegistration registration_unmanaged =
 				mgr.connectStructureUpdates(key, new Document(), IStructureModelListener.NIL_LISTENER);
 		assertTrue(structureInfo != registration_unmanaged.structureInfo);
-
+		
 		checkTaskDelta(1);
 		
 		testBasicFlow(key, doc, false);
@@ -350,6 +349,6 @@ public class StructureModelTest extends CommonCoreTest {
 	
 	/* -----------------  ----------------- */
 	
-//	public static class _WithActualTest extends StructureModelManager_WithActualTest { }
+	//	public static class _WithActualTest extends StructureModelManager_WithActualTest { }
 	
 }
