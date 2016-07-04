@@ -29,6 +29,7 @@ import melnorme.lang.ide.ui.editor.EditorUtils.OpenNewEditorMode;
 import melnorme.lang.ide.ui.editor.actions.AbstractEditorHandler;
 import melnorme.lang.ide.ui.editor.actions.GoToMatchingBracketHandler;
 import melnorme.lang.ide.ui.editor.actions.OpenQuickOutlineHandler;
+import melnorme.lang.ide.ui.editor.actions.OpenTypeHandler;
 import melnorme.lang.ide.ui.editor.actions.ToggleCommentHandler;
 import melnorme.lang.ide.ui.utils.operations.AbstractEditorOperation2;
 import melnorme.lang.ide.ui.utils.operations.BasicUIOperation;
@@ -77,6 +78,7 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 		activateHandler(EditorCommandIds.ToggleComment, getHandler_ToggleComment());
 		
 		activateHandler(EditorCommandIds.QuickOutline, getHandler_QuickOutline());
+		activateHandler(EditorCommandIds.OpenType, getHandler_OpenType());
 		
 		activateHandler(EditorCommandIds.Format, getHandler_Format());
 		
@@ -116,6 +118,10 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	
 	protected AbstractHandler getHandler_QuickOutline() {
 		return new OpenQuickOutlineHandler(getPage());
+	}
+	
+	protected AbstractHandler getHandler_OpenType() {
+		return new OpenTypeHandler(getPage());
 	}
 	
 	public AbstractEditorHandler getHandler_Format() {
