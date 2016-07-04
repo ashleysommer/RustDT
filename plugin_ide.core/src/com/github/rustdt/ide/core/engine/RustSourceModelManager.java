@@ -21,6 +21,7 @@ import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.SourceModelManager;
 import melnorme.lang.ide.core.operations.ToolManager;
 import melnorme.lang.ide.core.utils.ResourceUtils;
+import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
 import melnorme.utilbox.collections.Indexable;
@@ -77,12 +78,12 @@ public class RustSourceModelManager extends SourceModelManager {
 							newStructure.getParserProblems());
 					}
 				}
+				GlobalSourceStructure.fileUpdated(newStructure, fileLocation);
 				return newStructure;
 			} catch(CommonException ce) {
 				throw new CommonException("Error reading parse-describe output:", ce.toStatusException());
 				//toolManager.logAndNotifyError("Error reading parse-describe output:", ce.toStatusException());
 			}
-			
 		}
 		
 		protected String getDescribeOutput(String source, Location fileLocation) 
