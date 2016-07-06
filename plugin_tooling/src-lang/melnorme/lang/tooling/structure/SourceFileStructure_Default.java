@@ -22,8 +22,7 @@ public abstract class SourceFileStructure_Default extends AbstractStructureConta
 	
 	protected final Indexable<ParserError> parserProblems;
 	
-	public SourceFileStructure_Default(Indexable<StructureElement> children,
-			Indexable<ParserError> parserProblems) {
+	public SourceFileStructure_Default(Indexable<StructureElement> children, Indexable<ParserError> parserProblems) {
 		super(children);
 		this.parserProblems = nullToEmpty(parserProblems);
 	}

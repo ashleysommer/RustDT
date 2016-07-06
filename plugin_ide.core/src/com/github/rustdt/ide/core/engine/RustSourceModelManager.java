@@ -77,7 +77,7 @@ public class RustSourceModelManager extends SourceModelManager {
 						newStructure = new SourceFileStructure(previousElements, newStructure.getParserProblems());
 					}
 				}
-				GlobalSourceStructure.fileUpdated(newStructure, fileLocation);
+				GlobalSourceStructure.addFileStructure(newStructure);
 				return newStructure;
 			} catch(CommonException ce) {
 				throw new CommonException("Error reading parse-describe output:", ce.toStatusException());
