@@ -32,6 +32,10 @@ public class GlobalSourceStructure {
 		aggregatedElements.put(location, elementsAtLocation);
 	}
 	
+	public static void fileRemoved(Location location) {
+		aggregatedElements.remove(location);
+	}
+	
 	// TODO: Find a way of reusing structure elements without cloning the whole structure.
 	public static SourceFileStructure getGlobalSourceStructure() {
 		List<StructureElement> children = aggregatedElements
