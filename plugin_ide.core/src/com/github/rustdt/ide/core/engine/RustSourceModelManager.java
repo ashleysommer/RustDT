@@ -10,27 +10,21 @@
  *******************************************************************************/
 package com.github.rustdt.ide.core.engine;
 
-import java.nio.file.Path;
+import java.util.Optional;
 
-import org.eclipse.core.resources.IProject;
-
-import com.github.rustdt.ide.core.operations.RustSDKPreferences;
+import com.github.rustdt.ide.core.operations.RustParseDescribeLauncher;
 import com.github.rustdt.tooling.ops.RustParseDescribeParser;
 
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.SourceModelManager;
 import melnorme.lang.ide.core.operations.ToolManager;
-import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.CommonException;
-import melnorme.utilbox.core.DevelopmentCodeMarkers;
 import melnorme.utilbox.misc.Location;
-import melnorme.utilbox.misc.StringUtil;
-import melnorme.utilbox.process.ExternalProcessHelper.ExternalProcessResult;
 
 public class RustSourceModelManager extends SourceModelManager {
 	
@@ -58,14 +52,14 @@ public class RustSourceModelManager extends SourceModelManager {
 			
 			Location fileLocation = structureInfo.getLocation();
 			
-			String describeOutput = getDescribeOutput(source, fileLocation);
-			if(describeOutput == null) {
+			Optional<String> describeOutput = new RustParseDescribeLauncher(toolManager, cm).getDescribeOutput(source, fileLocation);
+			if(!describeOutput.isPresent()) {
 				return null;
 			}
 			
 			try {
 				RustParseDescribeParser parseDescribe = new RustParseDescribeParser(fileLocation, source);
-				SourceFileStructure newStructure = parseDescribe.parse(describeOutput);
+				SourceFileStructure newStructure = parseDescribe.parse(describeOutput.get());
 				if(newStructure.getParserProblems().size() > 0 && newStructure.getChildren().isEmpty()) {
 					
 					SourceFileStructure previousStructure = structureInfo.getStoredData().getOrNull();
@@ -76,29 +70,13 @@ public class RustSourceModelManager extends SourceModelManager {
 						newStructure = new SourceFileStructure(previousElements, newStructure.getParserProblems());
 					}
 				}
-				GlobalSourceStructure.fileUpdated(fileLocation, newStructure);
+				System.out.println("RoustSourceModelManager - File touched: " + fileLocation);
+				GlobalSourceStructure.fileTouched(fileLocation, newStructure);
 				return newStructure;
 			} catch(CommonException ce) {
 				throw new CommonException("Error reading parse-describe output:", ce.toStatusException());
 				// toolManager.logAndNotifyError("Error reading parse-describe output:", ce.toStatusException());
 			}
 		}
-		
-		protected String getDescribeOutput(String source, Location fileLocation)
-				throws OperationCancellation, CommonException {
-			if(DevelopmentCodeMarkers.TESTS_MODE) {
-				return null;
-			}
-			
-			IProject project = fileLocation == null ? null : ResourceUtils.getProjectFromMemberLocation(fileLocation);
-			Path path = RustSDKPreferences.RAINICORN_PATH2.getDerivedValue(project);
-			
-			ProcessBuilder pb = toolManager.createToolProcessBuilder(project, path);
-			
-			ExternalProcessResult describeResult = toolManager.runEngineTool(pb, source, cm);
-			return describeResult.getStdOutBytes().toString(StringUtil.UTF8);
-			
-		}
 	}
-	
 }

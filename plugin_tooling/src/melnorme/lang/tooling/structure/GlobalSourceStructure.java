@@ -21,7 +21,7 @@ public class GlobalSourceStructure {
 	private static final EnumSet<StructureElementKind> HIDDEN_ELEMENT_KINDS = EnumSet.of(StructureElementKind.EXTERN_CRATE,
 			StructureElementKind.USE_GROUP, StructureElementKind.USE, StructureElementKind.VAR);
 	
-	public static void fileUpdated(Location location, SourceFileStructure fileStructure) {
+	public static void fileTouched(Location location, SourceFileStructure fileStructure) {
 		SortedSet<StructureElement> elementsAtLocation = new TreeSet<>(comparing(StructureElement::getName));
 		
 		fileStructure.flattenSubTree()
