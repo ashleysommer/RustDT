@@ -71,7 +71,7 @@ public class RustSourceModelManager extends SourceModelManager {
 						return new SourceFileStructure(previousElements, newStructure.getParserProblems());
 					}
 				}
-				System.out.println("RoustSourceModelManager - File touched: " + fileLocation);
+				System.out.println("RustSourceModelManager - File touched: " + fileLocation);
 				GlobalSourceStructure.fileTouched(fileLocation, newStructure);
 				return newStructure;
 			} catch(CommonException ce) {
