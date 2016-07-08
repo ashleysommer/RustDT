@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import melnorme.utilbox.collections.ArrayList2;
 import melnorme.utilbox.misc.Location;
 
-// TODO: Update type structure in background thread when the file is edited or when the workspace content changes.
 public class GlobalSourceStructure {
 	private static final SortedMap<Location, SortedSet<StructureElement>> aggregatedElements = new TreeMap<>(comparing(Location::toPath));
 	

@@ -17,13 +17,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.github.rustdt.ide.core.operations.RustParseDescribeLauncher;
 import com.github.rustdt.ide.ui.actions.RustOpenDefinitionOperation;
 import com.github.rustdt.tooling.ops.RustParseDescribeParser;
 
+import melnorme.lang.ide.core.AbstractLangCore;
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.ide.ui.editor.EditorUtils.OpenNewEditorMode;
@@ -47,23 +47,42 @@ public class RustEditorActionContributor extends LangEditorActionContributor {
 	
 	@Override
 	protected void registerOtherEditorHandlers() {
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(event -> {
-			try {
-				processEvent(event);
-			} catch(CoreException e) {
-				throw new RuntimeException(e);
-			}
-		}, IResourceChangeEvent.POST_CHANGE);
+		setupOpenType();
 	}
 	
-	void processEvent(IResourceChangeEvent event) throws CoreException {
-		event.getDelta().accept(delta -> {
-			IResource resource = delta.getResource();
-			boolean isFile = resource instanceof IFile;
-			if(!isFile) {
-				return true;
-			}
-			Location location = ResourceUtils.getResourceLocation(resource);
+	// TODO: Evaluate source structure in background thread.
+	private void setupOpenType() {
+		evaluateGlobalSourceStructure();
+		listenToUpdatesOfGlobalSourceStructure();
+	}
+	
+	private void evaluateGlobalSourceStructure() {
+		try {
+			ResourcesPlugin.getWorkspace().getRoot().accept(this::resourceTouched);
+		} catch(Exception e) {
+			AbstractLangCore.log().logError("Global source structure could not be determined", e);
+		}
+	}
+	
+	private boolean resourceTouched(IResource resource) {
+		convertToRustFileLocation(resource).ifPresent(RustEditorActionContributor::fileTouched);
+		return true;
+	}
+	
+	private void listenToUpdatesOfGlobalSourceStructure() {
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this::processEvent, IResourceChangeEvent.POST_CHANGE);
+	}
+	
+	private void processEvent(IResourceChangeEvent event) {
+		try {
+			event.getDelta().accept(this::applyResourceDelta);
+		} catch(Exception e) {
+			AbstractLangCore.log().logError("Global source structure could not be determined", e);
+		}
+	}
+	
+	private boolean applyResourceDelta(IResourceDelta delta) {
+		convertToRustFileLocation(delta.getResource()).ifPresent(location -> {
 			switch(delta.getKind()) {
 			case IResourceDelta.ADDED:
 			case IResourceDelta.CHANGED:
@@ -73,8 +92,21 @@ public class RustEditorActionContributor extends LangEditorActionContributor {
 				fileRemoved(location);
 				break;
 			}
-			return true;
 		});
+		return true;
+	}
+	
+	private static Optional<Location> convertToRustFileLocation(IResource resource) {
+		return Optional.of(resource)
+				.filter(res -> res instanceof IFile)
+				.filter(RustEditorActionContributor::isValidRustPath)
+				.map(ResourceUtils::getResourceLocation);
+	}
+	
+	// TODO: Find a good filter
+	private static boolean isValidRustPath(IResource resource) {
+		String path = resource.getFullPath().toString();
+		return path.contains("src") && path.endsWith(".rs");
 	}
 	
 	private static void fileRemoved(Location location) {
