@@ -17,6 +17,7 @@ import static melnorme.utilbox.core.CoreUtil.nullToEmpty;
 import java.util.ArrayList;
 import java.util.List;
 
+import melnorme.utilbox.collections.ArrayList2;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.misc.HashcodeUtil;
 
@@ -43,6 +44,14 @@ public abstract class AbstractStructureContainer implements IStructureElementCon
 	@Override
 	public Indexable<StructureElement> getChildren() {
 		return children;
+	}
+	
+	public Indexable<StructureElement> cloneSubTree() {
+		ArrayList2<StructureElement> clonedElements = new ArrayList2<>(children.size());
+		for(StructureElement child : children) {
+			clonedElements.add(child.cloneTree());
+		}
+		return clonedElements;
 	}
 	
 	public List<StructureElement> flattenSubTree() {

@@ -59,15 +59,13 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 		
 		StructureElement other = (StructureElement) obj;
 		
-		return
-				areEqual(name, other.name) &&
+		return areEqual(name, other.name) &&
 				areEqual(nameSourceRange2, other.nameSourceRange2) &&
 				areEqual(sourceRange, other.sourceRange) &&
 				areEqual(elementKind, other.elementKind) &&
 				areEqual(elementAttributes, other.elementAttributes) &&
 				areEqual(type, other.type) &&
-				areEqual(children, other.children)
-				;
+				areEqual(children, other.children);
 	}
 	
 	@Override
@@ -80,11 +78,10 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 		return "ELEM " + name + sourceRange + " " + elementKind + prefixStr(" : ", type) + " " + elementAttributes;
 	}
 	
-	
 	public static ArrayList2<StructureElement> cloneSubTree(Indexable<StructureElement> elements) {
 		ArrayList2<StructureElement> clonedElements = new ArrayList2<>(elements.size());
-		for (StructureElement child : elements) {
-			clonedElements.add(child.cloneSubTree());
+		for(StructureElement child : elements) {
+			clonedElements.add(child.cloneTree());
 		}
 		return clonedElements;
 	}
@@ -145,7 +142,7 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 		
 		if(parent instanceof IStructureElementContainer) {
 			return parent;
-		} else if (parent instanceof IStructureElement) {
+		} else if(parent instanceof IStructureElement) {
 			return getFileStructure((IStructureElement) parent);
 		} else {
 			return null;

@@ -66,7 +66,7 @@ public class RustSourceModelManager extends SourceModelManager {
 				if(keepPreviousStructure) {
 					SourceFileStructure previousStructure = structureInfo.getStoredData().getOrNull();
 					if(previousStructure != null) {
-						Indexable<StructureElement> previousElements = StructureElement.cloneSubTree(previousStructure.getChildren());
+						Indexable<StructureElement> previousElements = previousStructure.cloneSubTree();
 						
 						return new SourceFileStructure(previousElements, newStructure.getParserProblems());
 					}

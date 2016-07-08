@@ -35,8 +35,8 @@ public class StructureElement extends StructureElement_Default {
 		return location;
 	}
 	
-	public StructureElement cloneSubTree() {
-		return cloneWithChildren(cloneSubTree(children));
+	public StructureElement cloneTree() {
+		return cloneWithChildren(cloneSubTree());
 	}
 	
 	public List<StructureElement> flattenTree() {

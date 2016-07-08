@@ -42,7 +42,7 @@ public class GlobalSourceStructure {
 				.values()
 				.stream()
 				.flatMap(Set::stream)
-				.map(StructureElement::cloneSubTree)
+				.map(StructureElement::cloneTree)
 				.collect(Collectors.toList());
 		
 		return new SourceFileStructure(new ArrayList2<>(children), null);
