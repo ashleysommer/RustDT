@@ -54,20 +54,21 @@ public class RustSourceModelManager extends SourceModelManager {
 			
 			Optional<String> describeOutput = new RustParseDescribeLauncher(toolManager, cm).getDescribeOutput(source, fileLocation);
 			if(!describeOutput.isPresent()) {
-				return null;
+				// Absent case only relevant if DevelopmentCodeMarkers.TESTS_MODE is set. Would like to remove this workaround.
+				return null; // null means outline is removed.
 			}
 			
 			try {
 				RustParseDescribeParser parseDescribe = new RustParseDescribeParser(fileLocation, source);
 				SourceFileStructure newStructure = parseDescribe.parse(describeOutput.get());
-				if(newStructure.getParserProblems().size() > 0 && newStructure.getChildren().isEmpty()) {
-					
+				
+				boolean keepPreviousStructure = !newStructure.getParserProblems().isEmpty() && newStructure.getChildren().isEmpty();
+				if(keepPreviousStructure) {
 					SourceFileStructure previousStructure = structureInfo.getStoredData().getOrNull();
 					if(previousStructure != null) {
-						// Use elements from previous structure:
 						Indexable<StructureElement> previousElements = StructureElement.cloneSubTree(previousStructure.getChildren());
 						
-						newStructure = new SourceFileStructure(previousElements, newStructure.getParserProblems());
+						return new SourceFileStructure(previousElements, newStructure.getParserProblems());
 					}
 				}
 				System.out.println("RoustSourceModelManager - File touched: " + fileLocation);
