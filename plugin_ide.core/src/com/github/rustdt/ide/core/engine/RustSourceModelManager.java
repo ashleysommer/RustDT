@@ -71,17 +71,16 @@ public class RustSourceModelManager extends SourceModelManager {
 					SourceFileStructure previousStructure = structureInfo.getStoredData().getOrNull();
 					if(previousStructure != null) {
 						// Use elements from previous structure:
-						Indexable<StructureElement> previousElements =
-								StructureElement.cloneSubTree(previousStructure.getChildren());
+						Indexable<StructureElement> previousElements = StructureElement.cloneSubTree(previousStructure.getChildren());
 						
 						newStructure = new SourceFileStructure(previousElements, newStructure.getParserProblems());
 					}
 				}
-				GlobalSourceStructure.addFileStructure(newStructure);
+				GlobalSourceStructure.fileUpdated(fileLocation, newStructure);
 				return newStructure;
 			} catch(CommonException ce) {
 				throw new CommonException("Error reading parse-describe output:", ce.toStatusException());
-				//toolManager.logAndNotifyError("Error reading parse-describe output:", ce.toStatusException());
+				// toolManager.logAndNotifyError("Error reading parse-describe output:", ce.toStatusException());
 			}
 		}
 		
