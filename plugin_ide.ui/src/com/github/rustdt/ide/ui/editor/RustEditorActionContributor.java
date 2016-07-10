@@ -119,10 +119,10 @@ public class RustEditorActionContributor extends LangEditorActionContributor {
 		try {
 			String source = FileUtil.readFileContents(location, StringUtil.UTF8);
 			RustParseDescribeLauncher parseDescribeLauncher = new RustParseDescribeLauncher(LangCore.getToolManager(), () -> false);
-			Optional<String> parseDescribeStdout = parseDescribeLauncher.getDescribeOutput(source, location);
+			String parseDescribeStdout = parseDescribeLauncher.getDescribeOutput(source, location);
 			
 			RustParseDescribeParser parseDescribeParser = new RustParseDescribeParser(location, source);
-			SourceFileStructure fileStructure = parseDescribeParser.parse(parseDescribeStdout.get());
+			SourceFileStructure fileStructure = parseDescribeParser.parse(parseDescribeStdout);
 			
 			if(fileStructure.getParserProblems().isEmpty()) {
 				GlobalSourceStructure.fileTouched(location, fileStructure);

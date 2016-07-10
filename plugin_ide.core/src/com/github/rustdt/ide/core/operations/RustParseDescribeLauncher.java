@@ -1,7 +1,6 @@
 package com.github.rustdt.ide.core.operations;
 
 import java.nio.file.Path;
-import java.util.Optional;
 
 import org.eclipse.core.resources.IProject;
 
@@ -24,10 +23,10 @@ public class RustParseDescribeLauncher {
 		this.cancelMonitor = cancelMonitor;
 	}
 	
-	public Optional<String> getDescribeOutput(String source, Location fileLocation)
+	public String getDescribeOutput(String source, Location fileLocation)
 			throws OperationCancellation, CommonException {
 		if(DevelopmentCodeMarkers.TESTS_MODE) {
-			return Optional.empty();
+			return "RUST_PARSE_DESCRIBE 1.0 { MESSAGES {} }";
 		}
 		
 		IProject project = fileLocation == null ? null : ResourceUtils.getProjectFromMemberLocation(fileLocation);
@@ -36,6 +35,6 @@ public class RustParseDescribeLauncher {
 		ProcessBuilder pb = toolManager.createToolProcessBuilder(project, path);
 		
 		ExternalProcessResult describeResult = toolManager.runEngineTool(pb, source, cancelMonitor);
-		return Optional.of(describeResult.getStdOutBytes().toString(StringUtil.UTF8));
+		return describeResult.getStdOutBytes().toString(StringUtil.UTF8);
 	}
 }

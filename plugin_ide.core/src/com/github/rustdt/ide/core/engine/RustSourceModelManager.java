@@ -10,8 +10,6 @@
  *******************************************************************************/
 package com.github.rustdt.ide.core.engine;
 
-import java.util.Optional;
-
 import com.github.rustdt.ide.core.operations.RustParseDescribeLauncher;
 import com.github.rustdt.tooling.ops.RustParseDescribeParser;
 
@@ -52,15 +50,11 @@ public class RustSourceModelManager extends SourceModelManager {
 			
 			Location fileLocation = structureInfo.getLocation();
 			
-			Optional<String> describeOutput = new RustParseDescribeLauncher(toolManager, cm).getDescribeOutput(source, fileLocation);
-			if(!describeOutput.isPresent()) {
-				// Absent case only relevant if DevelopmentCodeMarkers.TESTS_MODE is set. Would like to remove this workaround.
-				return null; // null means outline is removed.
-			}
+			String describeOutput = new RustParseDescribeLauncher(toolManager, cm).getDescribeOutput(source, fileLocation);
 			
 			try {
 				RustParseDescribeParser parseDescribe = new RustParseDescribeParser(fileLocation, source);
-				SourceFileStructure newStructure = parseDescribe.parse(describeOutput.get());
+				SourceFileStructure newStructure = parseDescribe.parse(describeOutput);
 				
 				boolean keepPreviousStructure = !newStructure.getParserProblems().isEmpty() && newStructure.getChildren().isEmpty();
 				if(keepPreviousStructure) {
