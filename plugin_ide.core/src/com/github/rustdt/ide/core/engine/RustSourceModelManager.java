@@ -16,10 +16,7 @@ import com.github.rustdt.tooling.ops.RustParseDescribeParser;
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.SourceModelManager;
 import melnorme.lang.ide.core.operations.ToolManager;
-import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.lang.tooling.structure.SourceFileStructure;
-import melnorme.lang.tooling.structure.StructureElement;
-import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.misc.Location;
@@ -47,7 +44,6 @@ public class RustSourceModelManager extends SourceModelManager {
 		
 		@Override
 		protected SourceFileStructure doCreateNewData() throws CommonException, OperationCancellation {
-			
 			Location fileLocation = structureInfo.getLocation();
 			
 			String describeOutput = new RustParseDescribeLauncher(toolManager, cm).getDescribeOutput(source, fileLocation);
@@ -60,13 +56,9 @@ public class RustSourceModelManager extends SourceModelManager {
 				if(keepPreviousStructure) {
 					SourceFileStructure previousStructure = structureInfo.getStoredData().getOrNull();
 					if(previousStructure != null) {
-						Indexable<StructureElement> previousElements = previousStructure.cloneSubTree();
-						
-						return new SourceFileStructure(previousElements, newStructure.getParserProblems());
+						return new SourceFileStructure(previousStructure.cloneSubTree(), newStructure.getParserProblems());
 					}
 				}
-				System.out.println("RustSourceModelManager - File touched: " + fileLocation);
-				GlobalSourceStructure.fileTouched(fileLocation, newStructure);
 				return newStructure;
 			} catch(CommonException ce) {
 				throw new CommonException("Error reading parse-describe output:", ce.toStatusException());
