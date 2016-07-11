@@ -17,6 +17,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.github.rustdt.ide.core.operations.RustParseDescribeLauncher;
@@ -50,21 +54,26 @@ public class RustEditorActionContributor extends LangEditorActionContributor {
 		setupOpenType();
 	}
 	
-	// TODO: Evaluate source structure in background thread.
 	private void setupOpenType() {
 		evaluateGlobalSourceStructure();
 		listenToUpdatesOfGlobalSourceStructure();
 	}
 	
 	private void evaluateGlobalSourceStructure() {
-		try {
-			ResourcesPlugin.getWorkspace().getRoot().accept(this::resourceTouched);
-		} catch(Exception e) {
-			AbstractLangCore.log().logError("Global source structure could not be determined", e);
-		}
+		new Job("Searching types") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					ResourcesPlugin.getWorkspace().getRoot().accept(RustEditorActionContributor.this::addResource);
+				} catch(Exception e) {
+					AbstractLangCore.log().logError("Global source structure could not be determined", e);
+				}
+				return Status.OK_STATUS;
+			}
+		}.schedule();
 	}
 	
-	private boolean resourceTouched(IResource resource) {
+	private boolean addResource(IResource resource) {
 		convertToRustFileLocation(resource).ifPresent(RustEditorActionContributor::fileTouched);
 		return true;
 	}
@@ -74,11 +83,17 @@ public class RustEditorActionContributor extends LangEditorActionContributor {
 	}
 	
 	private void processEvent(IResourceChangeEvent event) {
-		try {
-			event.getDelta().accept(this::applyResourceDelta);
-		} catch(Exception e) {
-			AbstractLangCore.log().logError("Global source structure could not be determined", e);
-		}
+		new Job("Updating types") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					event.getDelta().accept(RustEditorActionContributor.this::applyResourceDelta);
+				} catch(Exception e) {
+					AbstractLangCore.log().logError("Global source structure could not be determined", e);
+				}
+				return Status.OK_STATUS;
+			}
+		}.schedule();
 	}
 	
 	private boolean applyResourceDelta(IResourceDelta delta) {

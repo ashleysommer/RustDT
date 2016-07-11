@@ -20,7 +20,7 @@ public class GlobalSourceStructure {
 	private static final EnumSet<StructureElementKind> HIDDEN_ELEMENT_KINDS = EnumSet.of(StructureElementKind.EXTERN_CRATE,
 			StructureElementKind.USE_GROUP, StructureElementKind.USE, StructureElementKind.VAR);
 	
-	public static void fileTouched(Location location, SourceFileStructure fileStructure) {
+	public static synchronized void fileTouched(Location location, SourceFileStructure fileStructure) {
 		SortedSet<StructureElement> elementsAtLocation = new TreeSet<>(comparing(StructureElement::getName));
 		
 		fileStructure.flattenSubTree()
@@ -31,12 +31,12 @@ public class GlobalSourceStructure {
 		aggregatedElements.put(location, elementsAtLocation);
 	}
 	
-	public static void fileRemoved(Location location) {
+	public static synchronized void fileRemoved(Location location) {
 		aggregatedElements.remove(location);
 	}
 	
 	// TODO: Find a way of reusing structure elements without cloning the whole structure.
-	public static SourceFileStructure getGlobalSourceStructure() {
+	public static synchronized SourceFileStructure getGlobalSourceStructure() {
 		List<StructureElement> children = aggregatedElements
 				.values()
 				.stream()
