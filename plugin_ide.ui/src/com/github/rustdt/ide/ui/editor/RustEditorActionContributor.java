@@ -121,7 +121,7 @@ public class RustEditorActionContributor extends LangEditorActionContributor {
 	// TODO: Find a good filter
 	private static boolean isValidRustPath(IResource resource) {
 		String path = resource.getFullPath().toString();
-		return path.contains("src") && path.endsWith(".rs");
+		return path.endsWith(".rs");
 	}
 	
 	private static void fileRemoved(Location location) {
