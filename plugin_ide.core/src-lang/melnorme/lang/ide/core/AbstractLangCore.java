@@ -10,6 +10,7 @@
  *******************************************************************************/
 package melnorme.lang.ide.core;
 
+import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.engine.SourceModelManager;
 import melnorme.lang.ide.core.operations.ToolManager;
 import melnorme.lang.ide.core.operations.build.BuildManager;
@@ -33,6 +34,7 @@ public abstract class AbstractLangCore extends LoggingCore {
 	protected final BundleModelManager<? extends LangBundleModel> bundleManager;
 	protected final BuildManager buildManager;
 	protected final SourceModelManager sourceModelManager;
+	protected final IndexManager indexManager;
 	
 	public AbstractLangCore(ILogHandler logHandler) {
 		instance = (LangCore) this;
@@ -44,16 +46,18 @@ public abstract class AbstractLangCore extends LoggingCore {
 		bundleManager = LangCore_Actual.createBundleModelManager();
 		buildManager = createBuildManager();
 		sourceModelManager = LangCore_Actual.createSourceModelManager();
+		indexManager = LangCore_Actual.createIndexManager();
 	}
 	
 	protected void shutdown() {
 		buildManager.dispose();
 		bundleManager.shutdownManager();
 		sourceModelManager.dispose();
+		indexManager.dispose();
 		toolManager.shutdownNow();
 	}
 	
-	/* -----------------  ----------------- */ 
+	/* -----------------  ----------------- */
 	
 	public static ILogHandler log() {
 		return instance.logHandler;
@@ -66,7 +70,7 @@ public abstract class AbstractLangCore extends LoggingCore {
 	}
 	
 	protected abstract ToolManager createToolManager();
-
+	
 	public static ToolManager getToolManager() {
 		return instance.toolManager;
 	}
@@ -74,6 +78,7 @@ public abstract class AbstractLangCore extends LoggingCore {
 	public static BundleModelManager<? extends LangBundleModel> getBundleModelManager() {
 		return instance.bundleManager;
 	}
+	
 	public static LangBundleModel getBundleModel() {
 		return getBundleModelManager().getModel();
 	}
@@ -112,6 +117,7 @@ class LoggingCore {
 	public static void logError(String message) {
 		log().logError(message);
 	}
+	
 	/** Logs an error status with given message and given throwable. */
 	public static void logError(String message, Throwable throwable) {
 		log().logError(message, throwable);
@@ -121,6 +127,7 @@ class LoggingCore {
 	public static void logWarning(String message) {
 		log().logWarning(message);
 	}
+	
 	/** Logs a warning status with given message and given throwable. */
 	public static void logWarning(String message, Throwable throwable) {
 		log().logWarning(message, throwable);
@@ -134,5 +141,5 @@ class LoggingCore {
 	public static void logInternalError(Throwable throwable) {
 		log().logError("Internal Error!", throwable);
 	}
-
+	
 }

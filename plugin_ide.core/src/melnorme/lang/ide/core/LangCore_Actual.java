@@ -16,13 +16,14 @@ import com.github.rustdt.ide.core.operations.RustBuildManager;
 import com.github.rustdt.ide.core.operations.RustToolManager;
 import com.github.rustdt.tooling.ops.RustSDKLocationValidator;
 
+import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.operations.ToolManager;
 import melnorme.utilbox.misc.ILogHandler;
 
 public class LangCore_Actual extends AbstractLangCore {
 	
 	public static final String PLUGIN_ID = "com.github.rustdt.ide.core";
-	public static final String NATURE_ID = PLUGIN_ID +".nature";
+	public static final String NATURE_ID = PLUGIN_ID + ".nature";
 	
 	public static final String BUILDER_ID = PLUGIN_ID + ".Builder";
 	public static final String BUILD_PROBLEM_ID = PLUGIN_ID + ".build_problem";
@@ -38,7 +39,7 @@ public class LangCore_Actual extends AbstractLangCore {
 	public LangCore_Actual(ILogHandler logHandler) {
 		super(logHandler);
 	}
-		
+	
 	@Override
 	protected CoreSettings createCoreSettings() {
 		return new CoreSettings() {
@@ -58,6 +59,9 @@ public class LangCore_Actual extends AbstractLangCore {
 		return new RustSourceModelManager();
 	}
 	
+	public static IndexManager createIndexManager() {
+		return new IndexManager();
+	}
 	
 	public static RustBundleModelManager createBundleModelManager() {
 		return new RustBundleModelManager();
