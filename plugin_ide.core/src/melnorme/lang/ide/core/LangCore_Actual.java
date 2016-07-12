@@ -11,12 +11,12 @@
 package melnorme.lang.ide.core;
 
 import com.github.rustdt.ide.core.cargomodel.RustBundleModelManager;
+import com.github.rustdt.ide.core.engine.RustIndexManager;
 import com.github.rustdt.ide.core.engine.RustSourceModelManager;
 import com.github.rustdt.ide.core.operations.RustBuildManager;
 import com.github.rustdt.ide.core.operations.RustToolManager;
 import com.github.rustdt.tooling.ops.RustSDKLocationValidator;
 
-import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.operations.ToolManager;
 import melnorme.utilbox.misc.ILogHandler;
 
@@ -59,8 +59,8 @@ public class LangCore_Actual extends AbstractLangCore {
 		return new RustSourceModelManager();
 	}
 	
-	public static IndexManager createIndexManager() {
-		return new IndexManager();
+	public static RustIndexManager createIndexManager() {
+		return new RustIndexManager();
 	}
 	
 	public static RustBundleModelManager createBundleModelManager() {
