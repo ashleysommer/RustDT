@@ -118,7 +118,6 @@ public class RustEditorActionContributor extends LangEditorActionContributor {
 				.map(ResourceUtils::getResourceLocation);
 	}
 	
-	// TODO: Find a good filter
 	private static boolean isValidRustPath(IResource resource) {
 		String path = resource.getFullPath().toString();
 		return path.endsWith(".rs");
