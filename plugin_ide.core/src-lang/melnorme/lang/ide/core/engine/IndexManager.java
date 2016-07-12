@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -27,9 +28,12 @@ import melnorme.utilbox.misc.Location;
 import melnorme.utilbox.misc.StringUtil;
 
 public class IndexManager extends AbstractAgentManager {
+	private final IResourceChangeListener resourcesChanged = this::processEvent;
+	
 	public IndexManager() {
 		evaluateGlobalSourceStructure();
 		listenToUpdatesOfGlobalSourceStructure();
+		asOwner().bind(this::stopListeningToUpdatesOfGlobalSourceStructure);
 	}
 	
 	private void evaluateGlobalSourceStructure() {
@@ -46,13 +50,17 @@ public class IndexManager extends AbstractAgentManager {
 		}.schedule();
 	}
 	
+	private void listenToUpdatesOfGlobalSourceStructure() {
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(resourcesChanged, IResourceChangeEvent.POST_CHANGE);
+	}
+	
+	private void stopListeningToUpdatesOfGlobalSourceStructure() {
+		ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourcesChanged);
+	}
+	
 	private boolean addResource(IResource resource) {
 		convertToRustFileLocation(resource).ifPresent(IndexManager::fileTouched);
 		return true;
-	}
-	
-	private void listenToUpdatesOfGlobalSourceStructure() {
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this::processEvent, IResourceChangeEvent.POST_CHANGE);
 	}
 	
 	private void processEvent(IResourceChangeEvent event) {
