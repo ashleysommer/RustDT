@@ -11,7 +11,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import melnorme.utilbox.collections.ArrayList2;
 import melnorme.utilbox.misc.Location;
 
 public class GlobalSourceStructure {
@@ -38,15 +37,11 @@ public class GlobalSourceStructure {
 		aggregatedElements.remove(location);
 	}
 	
-	// TODO: Find a way of reusing structure elements without cloning the whole structure.
-	public static synchronized SourceFileStructure getGlobalSourceStructure() {
-		List<StructureElement> children = aggregatedElements
+	public static synchronized List<StructureElement> getGlobalSourceStructure() {
+		return aggregatedElements
 			.values()
 			.stream()
 			.flatMap(Set::stream)
-			.map(StructureElement::cloneTree)
 			.collect(Collectors.toList());
-		
-		return new SourceFileStructure(new ArrayList2<>(children), null);
 	};
 }

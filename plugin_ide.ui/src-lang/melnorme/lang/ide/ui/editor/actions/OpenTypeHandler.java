@@ -34,9 +34,9 @@ public class OpenTypeHandler extends AbstractEditorHandler {
 			@Override
 			protected void doRunWithEditor(AbstractLangEditor editor) throws CommonException {
 				ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(),
-						LangUIPlugin_Actual.getStructureElementLabelProvider());
+					LangUIPlugin_Actual.getStructureElementLabelProvider());
 				dialog.setTitle("Open Type");
-				dialog.setElements(GlobalSourceStructure.getGlobalSourceStructure().getChildren().toArray());
+				dialog.setElements(GlobalSourceStructure.getGlobalSourceStructure().toArray());
 				dialog.open();
 				try {
 					EditorStructureUtil.openInEditorAndReveal(dialog.getFirstResult());
