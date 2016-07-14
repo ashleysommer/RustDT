@@ -18,7 +18,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import melnorme.lang.ide.ui.editor.EditorUtils;
-import melnorme.lang.tooling.structure.IStructureElementContainer;
+import melnorme.lang.tooling.structure.ISourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
 
 public class EditorStructureUtil {
@@ -28,12 +28,12 @@ public class EditorStructureUtil {
 		if(selectedElement instanceof StructureElement) {
 			StructureElement structureElement = (StructureElement) selectedElement;
 			
-			IStructureElementContainer fileStructure = structureElement.getContainingFileStructure();
-			if(fileStructure == null || !structureElement.getLocation().isPresent()) {
+			ISourceFileStructure fileStructure = structureElement.getContainingFileStructure();
+			if(fileStructure == null || !fileStructure.getLocation().isPresent()) {
 				return;
 			}
 			
-			IEditorInput newInput = EditorUtils.getBestEditorInputForLoc(structureElement.getLocation().get());
+			IEditorInput newInput = EditorUtils.getBestEditorInputForLoc(fileStructure.getLocation().get());
 			
 			IEditorPart part = EditorUtils.openEditor(newInput, EDITOR_ID, true);
 			revealInEditor(part, structureElement);

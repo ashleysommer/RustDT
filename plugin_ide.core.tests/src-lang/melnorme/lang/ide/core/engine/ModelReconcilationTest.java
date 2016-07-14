@@ -197,8 +197,8 @@ public class ModelReconcilationTest extends CommonCoreTest {
 						} catch(InterruptedException e) {
 							throw new OperationCancellation();
 						}
-						
-						return new SourceFileStructure(null, (Indexable<ParserError>) null);
+
+						return new SourceFileStructure(null, null, (Indexable<ParserError>) null);
 					}
 				};
 			};

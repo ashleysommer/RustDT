@@ -10,7 +10,6 @@ package melnorme.lang.ide.core.engine;
  *     Bruno Medeiros - initial API and implementation
  *******************************************************************************/
 
-
 import static melnorme.utilbox.core.Assert.AssertNamespace.assertFail;
 import static melnorme.utilbox.core.Assert.AssertNamespace.assertTrue;
 
@@ -60,7 +59,8 @@ public class StructureModelTest extends CommonCoreTest {
 			super(new DocumentReconcileManager(), new ProblemMarkerUpdater());
 		}
 		
-		public final SourceFileStructure DEFAULT_STRUCTURE = new SourceFileStructure(null, (Indexable<ParserError>) null);
+		public final SourceFileStructure DEFAULT_STRUCTURE = new SourceFileStructure(null, null,
+			(Indexable<ParserError>) null);
 		
 		public final Function<StructureInfo, StructureUpdateTask> DEFAULT_UPDATE_TASK = (structureInfo) -> {
 			return new StructureUpdateTask(structureInfo) {

@@ -20,6 +20,9 @@ import melnorme.lang.tooling.EProtection;
 import melnorme.lang.tooling.ElementAttributes;
 import melnorme.lang.tooling.ast.SourceRange;
 import melnorme.lang.tooling.common.ParserError;
+import melnorme.lang.tooling.structure.SourceFileStructure;
+import melnorme.lang.tooling.structure.StructureElement;
+import melnorme.lang.tooling.structure.StructureElementKind;
 import melnorme.utilbox.collections.ArrayList2;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.core.CommonException;
@@ -74,7 +77,7 @@ public abstract class AbstractStructureParser_Test extends CommonToolingTest {
 		if(elementAttributes == null) {
 			elementAttributes = new ElementAttributes(null);
 		}
-		return new StructureElement(null, name, nameSR, sr, elementKind, elementAttributes, type, children);
+		return new StructureElement(name, nameSR, sr, elementKind, elementAttributes, type, children);
 	}
 	
 	/* -----------------  ----------------- */
@@ -82,7 +85,7 @@ public abstract class AbstractStructureParser_Test extends CommonToolingTest {
 	protected void testParseStructure(String describeOutput, Indexable<ParserError> parserProblems,
 			StructureElement... expectedElements) throws CommonException {
 		ArrayList2<StructureElement> expectedStructure = new ArrayList2<>(expectedElements);
-		SourceFileStructure expected = new SourceFileStructure(expectedStructure, parserProblems);
+		SourceFileStructure expected = new SourceFileStructure(null, expectedStructure, parserProblems);
 		
 		testParseStructure(describeOutput, expected);
 	}

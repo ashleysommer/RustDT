@@ -133,15 +133,15 @@ abstract class StructureElement_Default extends AbstractStructureContainer imple
 	}
 	
 	@Override
-	public IStructureElementContainer getContainingFileStructure() {
+	public ISourceFileStructure getContainingFileStructure() {
 		return getFileStructure(this);
 	}
 	
-	public static IStructureElementContainer getFileStructure(IStructureElement element) {
+	public static ISourceFileStructure getFileStructure(IStructureElement element) {
 		IStructureElementContainer parent = element.getParent();
 		
-		if(parent instanceof IStructureElementContainer) {
-			return parent;
+		if(parent instanceof ISourceFileStructure) {
+			return (ISourceFileStructure) parent;
 		} else if(parent instanceof IStructureElement) {
 			return getFileStructure((IStructureElement) parent);
 		} else {

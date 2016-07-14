@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2015 IBM Corporation and others.
+ * Copyright (c) 2015 Bruno Medeiros and other Contributors.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,13 +10,16 @@
  *******************************************************************************/
 package melnorme.lang.tooling.structure;
 
-import melnorme.lang.tooling.common.ParserError;
-import melnorme.utilbox.collections.Indexable;
+import java.util.Optional;
+
 import melnorme.utilbox.misc.Location;
 
-public class SourceFileStructure extends SourceFileStructure_Default {
-	public SourceFileStructure(Location location, Indexable<StructureElement> children,
-			Indexable<ParserError> parserProblems) {
-		super(location, children, parserProblems);
-	}
+public interface ISourceFileStructure extends IStructureElementContainer {
+	
+	/** @return the location of this SourceFile */
+	Optional<Location> getLocation();
+	
+	//	@Override
+	String getModuleName();
+	
 }

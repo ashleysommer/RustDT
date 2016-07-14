@@ -14,7 +14,6 @@ import static melnorme.utilbox.core.Assert.AssertNamespace.assertFail;
 import static melnorme.utilbox.core.Assert.AssertNamespace.assertNotNull;
 
 import java.util.Iterator;
-import java.util.Optional;
 
 import melnorme.lang.tooling.EProtection;
 import melnorme.lang.tooling.ElementAttributes;
@@ -75,7 +74,7 @@ public class RustParseDescribeParser extends AbstractStructureParser {
 		
 		ArrayList2<StructureElement> structureChildren = parseStructureElements(reader);
 		
-		return new SourceFileStructure(structureChildren, parserProblems);
+		return new SourceFileStructure(location, structureChildren, parserProblems);
 	}
 	
 	/* -----------------  ----------------- */
@@ -119,8 +118,9 @@ public class RustParseDescribeParser extends AbstractStructureParser {
 					int startPos = useElements.get(0).getSourceRange().getStartPos();
 					int endPos = useElements.get(useElements.size()-1).getSourceRange().getEndPos();
 					SourceRange sr = SourceRange.srStartToEnd(startPos, endPos);
-					StructureElement aggregatedUses = new StructureElement(Optional.ofNullable(location), "use declarations",
-							SourceRange.srStartToEnd(startPos, startPos), sr, StructureElementKind.USE_GROUP, null, null, useElements);
+					StructureElement aggregatedUses = new StructureElement("use declarations", 
+						SourceRange.srStartToEnd(startPos, startPos), sr, 
+						StructureElementKind.USE_GROUP, null, null, useElements);
 					useElements = null;
 					
 					reorganizedElems.add(aggregatedUses);
@@ -182,8 +182,8 @@ public class RustParseDescribeParser extends AbstractStructureParser {
 		
 		ArrayList2<StructureElement> children = parseStructureElements(reader);
 		
-		return new StructureElement(Optional.ofNullable(location), name, nameSourceRange, sourceRange, elementKind,
-				elementAttributes, type, children);
+		return new StructureElement(name, nameSourceRange, sourceRange, elementKind, 
+			elementAttributes, type, children);
 	}
 	
 	public SourceRange parseSourceRange(TextBlocksReader reader) throws CommonException {

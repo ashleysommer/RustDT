@@ -10,7 +10,6 @@
  *******************************************************************************/
 package melnorme.lang.ide.ui.editor.structure;
 
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IInformationControl;
@@ -26,7 +25,7 @@ import melnorme.lang.ide.ui.LangUIPlugin;
 import melnorme.lang.ide.ui.text.AbstractLangBasicSourceViewerConfiguration;
 import melnorme.lang.ide.ui.views.AbstractFilteredTreePopupControl;
 import melnorme.lang.ide.ui.views.StructureElementLabelProvider;
-import melnorme.lang.tooling.structure.IStructureElementContainer;
+import melnorme.lang.tooling.structure.ISourceFileStructure;
 
 public abstract class LangOutlineInformationControl extends AbstractFilteredTreePopupControl {
 	
@@ -53,10 +52,10 @@ public abstract class LangOutlineInformationControl extends AbstractFilteredTree
 	
 	@Override
 	public void setInput(Object information) {
-		IStructureElementContainer structure = null;
+		ISourceFileStructure structure = null;
 		
-		if(information instanceof IStructureElementContainer) {
-			structure = (IStructureElementContainer) information;
+		if(information instanceof ISourceFileStructure) {
+			structure = (ISourceFileStructure) information;
 		}
 		
 		if(structure != null) {
@@ -76,7 +75,7 @@ public abstract class LangOutlineInformationControl extends AbstractFilteredTree
 			try {
 				dispose();
 				EditorStructureUtil.openInEditorAndReveal(selectedElement);
-			} catch (CoreException ce) {
+			} catch(CoreException ce) {
 				EclipseCore.logStatus(ce);
 			}
 		}
