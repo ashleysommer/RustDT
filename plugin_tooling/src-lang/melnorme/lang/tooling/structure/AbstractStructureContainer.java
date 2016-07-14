@@ -14,8 +14,7 @@ import static melnorme.utilbox.core.Assert.AssertNamespace.assertTrue;
 import static melnorme.utilbox.core.CoreUtil.areEqual;
 import static melnorme.utilbox.core.CoreUtil.nullToEmpty;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Consumer;
 
 import melnorme.utilbox.collections.ArrayList2;
 import melnorme.utilbox.collections.Indexable;
@@ -54,12 +53,10 @@ public abstract class AbstractStructureContainer implements IStructureElementCon
 		return clonedElements;
 	}
 	
-	public List<StructureElement> flattenSubTree() {
-		List<StructureElement> flattenedElements = new ArrayList<>();
+	public void visitSubTree(Consumer<StructureElement> visitor) {
 		for(StructureElement child : getChildren()) {
-			flattenedElements.addAll(child.flattenTree());
+			child.visitTree(visitor);
 		}
-		return flattenedElements;
 	}
 	
 	/* ----------------- ----------------- */

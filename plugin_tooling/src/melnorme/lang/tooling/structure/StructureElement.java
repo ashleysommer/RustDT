@@ -10,9 +10,8 @@
  *******************************************************************************/
 package melnorme.lang.tooling.structure;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import melnorme.lang.tooling.ElementAttributes;
 import melnorme.lang.tooling.LANG_SPECIFIC;
@@ -24,9 +23,9 @@ import melnorme.utilbox.misc.Location;
 public class StructureElement extends StructureElement_Default {
 	private final Optional<Location> location;
 	
-	public StructureElement(Optional<Location> location, String name, SourceRange nameSourceRange, SourceRange sourceRange,
-			StructureElementKind elementKind, ElementAttributes elementAttributes, String type,
-			Indexable<StructureElement> children) {
+	public StructureElement(Optional<Location> location, String name, SourceRange nameSourceRange,
+		SourceRange sourceRange, StructureElementKind elementKind, ElementAttributes elementAttributes, String type,
+		Indexable<StructureElement> children) {
 		super(name, nameSourceRange, sourceRange, elementKind, elementAttributes, type, children);
 		this.location = location;
 	}
@@ -39,15 +38,13 @@ public class StructureElement extends StructureElement_Default {
 		return cloneWithChildren(cloneSubTree());
 	}
 	
-	public List<StructureElement> flattenTree() {
-		List<StructureElement> flattenedElements = new ArrayList<>();
-		StructureElement rootElement = cloneWithChildren(Indexable.EMPTY_INDEXABLE);
-		flattenedElements.add(rootElement);
-		flattenedElements.addAll(flattenSubTree());
-		return flattenedElements;
+	public void visitTree(Consumer<StructureElement> visitor) {
+		visitor.accept(this);
+		visitSubTree(visitor);
 	}
 	
 	private StructureElement cloneWithChildren(Indexable<StructureElement> children) {
-		return new StructureElement(location, name, nameSourceRange2, sourceRange, elementKind, elementAttributes, type, children);
+		return new StructureElement(location, name, nameSourceRange2, sourceRange, elementKind, elementAttributes, type,
+			children);
 	}
 }
