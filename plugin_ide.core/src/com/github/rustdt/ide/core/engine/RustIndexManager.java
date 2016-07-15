@@ -1,6 +1,8 @@
 package com.github.rustdt.ide.core.engine;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
@@ -9,13 +11,9 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 
-import com.github.rustdt.ide.core.operations.RustParseDescribeLauncher;
-import com.github.rustdt.tooling.ops.RustParseDescribeParser;
+import com.github.rustdt.ide.core.engine.RustIndexUpdateTask.RustIndexFileRemovedTask;
+import com.github.rustdt.ide.core.engine.RustIndexUpdateTask.RustIndexFileTouchedTask;
 
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.IndexManager;
@@ -23,14 +21,15 @@ import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
-import melnorme.utilbox.misc.FileUtil;
+import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData;
 import melnorme.utilbox.misc.Location;
-import melnorme.utilbox.misc.StringUtil;
 
 public class RustIndexManager extends IndexManager {
 	private final GlobalSourceStructure sourceStructure = new GlobalSourceStructure();
 	
-	private final IResourceChangeListener resourcesChanged = this::processEvent;
+	private final Map<Location, ConcurrentlyDerivedData<SourceFileStructure, ?>> runningUpdates = new HashMap<>();
+	
+	private final IResourceChangeListener resourcesChanged = this::processResourceChangeEvent;
 	
 	public RustIndexManager() {
 		evaluateGlobalSourceStructure();
@@ -39,17 +38,16 @@ public class RustIndexManager extends IndexManager {
 	}
 	
 	private void evaluateGlobalSourceStructure() {
-		new Job("Searching types") {
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				try {
-					ResourcesPlugin.getWorkspace().getRoot().accept(RustIndexManager.this::addResource);
-				} catch(Exception e) {
-					LangCore.logError("Could not initialize Rust type index", e);
-				}
-				return Status.OK_STATUS;
-			}
-		}.schedule();
+		try {
+			ResourcesPlugin.getWorkspace().getRoot().accept(RustIndexManager.this::addResource);
+		} catch(Exception e) {
+			LangCore.logError("Could not initialize Rust type index", e);
+		}
+	}
+	
+	private boolean addResource(IResource resource) {
+		convertToRustFileLocation(resource).ifPresent(this::enqueueFileTouchedTask);
+		return true;
 	}
 	
 	private void listenToUpdatesOfGlobalSourceStructure() {
@@ -60,23 +58,12 @@ public class RustIndexManager extends IndexManager {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourcesChanged);
 	}
 	
-	private boolean addResource(IResource resource) {
-		convertToRustFileLocation(resource).ifPresent(this::fileTouched);
-		return true;
-	}
-	
-	private void processEvent(IResourceChangeEvent event) {
-		new Job("Updating types") {
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				try {
-					event.getDelta().accept(RustIndexManager.this::applyResourceDelta);
-				} catch(Exception e) {
-					LangCore.logError("Could not update Rust type index", e);
-				}
-				return Status.OK_STATUS;
-			}
-		}.schedule();
+	private void processResourceChangeEvent(IResourceChangeEvent event) {
+		try {
+			event.getDelta().accept(RustIndexManager.this::applyResourceDelta);
+		} catch(Exception e) {
+			LangCore.logError("Could not update Rust type index", e);
+		}
 	}
 	
 	private boolean applyResourceDelta(IResourceDelta delta) {
@@ -84,10 +71,10 @@ public class RustIndexManager extends IndexManager {
 			switch(delta.getKind()) {
 			case IResourceDelta.ADDED:
 			case IResourceDelta.CHANGED:
-				fileTouched(location);
+				enqueueFileTouchedTask(location);
 				break;
 			case IResourceDelta.REMOVED:
-				fileRemoved(location);
+				enqueueFileRemovedTask(location);
 				break;
 			}
 		});
@@ -106,28 +93,47 @@ public class RustIndexManager extends IndexManager {
 		return path.endsWith(".rs");
 	}
 	
-	private void fileRemoved(Location location) {
+	private void enqueueFileRemovedTask(Location location) {
 		System.out.println("RustIndexManager - File removed: " + location);
-		sourceStructure.fileRemoved(location);
+		
+		ConcurrentlyDerivedData<SourceFileStructure, ?> sourceFileStructure = getOrCreateStructureInfo(location);
+		RustIndexUpdateTask indexUpdateTask = new RustIndexFileRemovedTask(sourceFileStructure, location);
+		
+		sourceFileStructure.setUpdateTask(indexUpdateTask);
+		executor.submitR(indexUpdateTask);
 	}
 	
-	private void fileTouched(Location location) {
+	private void enqueueFileTouchedTask(Location location) {
 		System.out.println("RustIndexManager - File touched: " + location);
-		try {
-			String source = FileUtil.readFileContents(location, StringUtil.UTF8);
-			RustParseDescribeLauncher parseDescribeLauncher = new RustParseDescribeLauncher(LangCore.getToolManager(),
-				() -> false);
-			String parseDescribeStdout = parseDescribeLauncher.getDescribeOutput(source, location);
-			
-			RustParseDescribeParser parseDescribeParser = new RustParseDescribeParser(location, source);
-			SourceFileStructure fileStructure = parseDescribeParser.parse(parseDescribeStdout);
-			
-			if(fileStructure.getParserProblems().isEmpty()) {
-				sourceStructure.fileTouched(location, fileStructure);
-			}
-		} catch(Exception e) {
-			LangCore.logError("Could not parse file: " + location, e);
+		
+		ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo = getOrCreateStructureInfo(location);
+		RustIndexUpdateTask indexUpdateTask = new RustIndexFileTouchedTask(structureInfo, location);
+		
+		structureInfo.setUpdateTask(indexUpdateTask);
+		executor.submitR(indexUpdateTask);
+	}
+	
+	private ConcurrentlyDerivedData<SourceFileStructure, ?> getOrCreateStructureInfo(Location location) {
+		ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo = runningUpdates.get(location);
+		if(structureInfo == null) {
+			structureInfo = createStructureInfo(location);
+			runningUpdates.put(location, structureInfo);
 		}
+		return structureInfo;
+	}
+	
+	private ConcurrentlyDerivedData<SourceFileStructure, ?> createStructureInfo(Location location) {
+		return new ConcurrentlyDerivedData<SourceFileStructure, ConcurrentlyDerivedData<?, ?>>() {
+			@Override
+			protected void doHandleDataChanged() {
+				SourceFileStructure storedData = getStoredData();
+				if(storedData == null) {
+					sourceStructure.fileRemoved(location);
+				} else {
+					sourceStructure.fileTouched(location, storedData);
+				}
+			}
+		};
 	}
 	
 	@Override
