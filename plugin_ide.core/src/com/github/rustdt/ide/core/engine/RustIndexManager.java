@@ -17,15 +17,12 @@ import org.eclipse.core.runtime.jobs.Job;
 import com.github.rustdt.ide.core.operations.RustParseDescribeLauncher;
 import com.github.rustdt.tooling.ops.RustParseDescribeParser;
 
-import melnorme.lang.ide.core.AbstractLangCore;
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
-import melnorme.utilbox.concurrency.OperationCancellation;
-import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.misc.FileUtil;
 import melnorme.utilbox.misc.Location;
 import melnorme.utilbox.misc.StringUtil;
@@ -48,7 +45,7 @@ public class RustIndexManager extends IndexManager {
 				try {
 					ResourcesPlugin.getWorkspace().getRoot().accept(RustIndexManager.this::addResource);
 				} catch(Exception e) {
-					AbstractLangCore.log().logError("Global source structure could not be determined", e);
+					LangCore.logError("Could not initialize Rust type index", e);
 				}
 				return Status.OK_STATUS;
 			}
@@ -75,7 +72,7 @@ public class RustIndexManager extends IndexManager {
 				try {
 					event.getDelta().accept(RustIndexManager.this::applyResourceDelta);
 				} catch(Exception e) {
-					AbstractLangCore.log().logError("Global source structure could not be determined", e);
+					LangCore.logError("Could not update Rust type index", e);
 				}
 				return Status.OK_STATUS;
 			}
@@ -110,12 +107,12 @@ public class RustIndexManager extends IndexManager {
 	}
 	
 	private void fileRemoved(Location location) {
-		System.out.println("RustEditorActionContributor - File removed: " + location);
+		System.out.println("RustIndexManager - File removed: " + location);
 		sourceStructure.fileRemoved(location);
 	}
 	
 	private void fileTouched(Location location) {
-		System.out.println("RustEditorActionContributor - File touched: " + location);
+		System.out.println("RustIndexManager - File touched: " + location);
 		try {
 			String source = FileUtil.readFileContents(location, StringUtil.UTF8);
 			RustParseDescribeLauncher parseDescribeLauncher = new RustParseDescribeLauncher(LangCore.getToolManager(),
@@ -128,8 +125,8 @@ public class RustIndexManager extends IndexManager {
 			if(fileStructure.getParserProblems().isEmpty()) {
 				sourceStructure.fileTouched(location, fileStructure);
 			}
-		} catch(OperationCancellation | CommonException e) {
-			throw new RuntimeException(e);
+		} catch(Exception e) {
+			LangCore.logError("Could not parse file: " + location, e);
 		}
 	}
 	
