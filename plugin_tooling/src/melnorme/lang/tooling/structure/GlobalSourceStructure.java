@@ -14,14 +14,14 @@ import java.util.stream.Collectors;
 import melnorme.utilbox.misc.Location;
 
 public class GlobalSourceStructure {
-	private static final SortedMap<Location, SortedSet<StructureElement>> aggregatedElements = new TreeMap<>(
-		comparing(Location::toPath));
-	
 	private static final EnumSet<StructureElementKind> HIDDEN_ELEMENT_KINDS = EnumSet.of(
 		StructureElementKind.EXTERN_CRATE, StructureElementKind.USE_GROUP, StructureElementKind.USE,
 		StructureElementKind.VAR);
 	
-	public static synchronized void fileTouched(Location location, SourceFileStructure fileStructure) {
+	private final SortedMap<Location, SortedSet<StructureElement>> aggregatedElements = new TreeMap<>(
+		comparing(Location::toPath));
+	
+	public synchronized void fileTouched(Location location, SourceFileStructure fileStructure) {
 		SortedSet<StructureElement> elementsAtLocation = new TreeSet<>(comparing(StructureElement::getName));
 		
 		fileStructure.visitSubTree(el -> {
@@ -33,11 +33,11 @@ public class GlobalSourceStructure {
 		aggregatedElements.put(location, elementsAtLocation);
 	}
 	
-	public static synchronized void fileRemoved(Location location) {
+	public synchronized void fileRemoved(Location location) {
 		aggregatedElements.remove(location);
 	}
 	
-	public static synchronized List<StructureElement> getGlobalSourceStructure() {
+	public synchronized List<StructureElement> getGlobalSourceStructure() {
 		return aggregatedElements
 			.values()
 			.stream()

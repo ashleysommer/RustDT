@@ -15,12 +15,12 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.ui.LangUIPlugin_Actual;
 import melnorme.lang.ide.ui.editor.AbstractLangEditor;
 import melnorme.lang.ide.ui.editor.LangEditorMessages;
 import melnorme.lang.ide.ui.editor.structure.EditorStructureUtil;
 import melnorme.lang.ide.ui.utils.operations.BasicEditorOperation;
-import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.utilbox.core.CommonException;
 
 public class OpenTypeHandler extends AbstractEditorHandler {
@@ -36,7 +36,7 @@ public class OpenTypeHandler extends AbstractEditorHandler {
 				ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(),
 					LangUIPlugin_Actual.getStructureElementLabelProvider());
 				dialog.setTitle("Open Type");
-				dialog.setElements(GlobalSourceStructure.getGlobalSourceStructure().toArray());
+				dialog.setElements(LangCore.getIndexManager().getGlobalSourceStructure().toArray());
 				dialog.open();
 				try {
 					EditorStructureUtil.openInEditorAndReveal(dialog.getFirstResult());

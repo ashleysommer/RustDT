@@ -105,6 +105,10 @@ public abstract class AbstractLangCore extends LoggingCore {
 		return instance.languageServerHandler;
 	}
 	
+	public static IndexManager getIndexManager() {
+		return instance.indexManager;
+	}
+	
 	/* -----------------  ----------------- */
 	
 	/** Start core agents, and do other initizaliation after UI is started. */

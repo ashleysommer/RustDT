@@ -1,5 +1,6 @@
 package com.github.rustdt.ide.core.engine;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
@@ -22,6 +23,7 @@ import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.lang.tooling.structure.SourceFileStructure;
+import melnorme.lang.tooling.structure.StructureElement;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.misc.FileUtil;
@@ -29,6 +31,8 @@ import melnorme.utilbox.misc.Location;
 import melnorme.utilbox.misc.StringUtil;
 
 public class RustIndexManager extends IndexManager {
+	private final GlobalSourceStructure sourceStructure = new GlobalSourceStructure();
+	
 	private final IResourceChangeListener resourcesChanged = this::processEvent;
 	
 	public RustIndexManager() {
@@ -60,7 +64,7 @@ public class RustIndexManager extends IndexManager {
 	}
 	
 	private boolean addResource(IResource resource) {
-		convertToRustFileLocation(resource).ifPresent(RustIndexManager::fileTouched);
+		convertToRustFileLocation(resource).ifPresent(this::fileTouched);
 		return true;
 	}
 	
@@ -105,12 +109,12 @@ public class RustIndexManager extends IndexManager {
 		return path.endsWith(".rs");
 	}
 	
-	private static void fileRemoved(Location location) {
+	private void fileRemoved(Location location) {
 		System.out.println("RustEditorActionContributor - File removed: " + location);
-		GlobalSourceStructure.fileRemoved(location);
+		sourceStructure.fileRemoved(location);
 	}
 	
-	private static void fileTouched(Location location) {
+	private void fileTouched(Location location) {
 		System.out.println("RustEditorActionContributor - File touched: " + location);
 		try {
 			String source = FileUtil.readFileContents(location, StringUtil.UTF8);
@@ -122,10 +126,15 @@ public class RustIndexManager extends IndexManager {
 			SourceFileStructure fileStructure = parseDescribeParser.parse(parseDescribeStdout);
 			
 			if(fileStructure.getParserProblems().isEmpty()) {
-				GlobalSourceStructure.fileTouched(location, fileStructure);
+				sourceStructure.fileTouched(location, fileStructure);
 			}
 		} catch(OperationCancellation | CommonException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	@Override
+	public List<StructureElement> getGlobalSourceStructure() {
+		return sourceStructure.getGlobalSourceStructure();
 	}
 }
