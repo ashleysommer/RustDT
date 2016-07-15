@@ -100,7 +100,7 @@ public class RustIndexManager extends IndexManager {
 		RustIndexUpdateTask indexUpdateTask = new RustIndexFileRemovedTask(sourceFileStructure, location);
 		
 		sourceFileStructure.setUpdateTask(indexUpdateTask);
-		executor.submitR(indexUpdateTask);
+		executor.submitTask(indexUpdateTask);
 	}
 	
 	private void enqueueFileTouchedTask(Location location) {
@@ -110,7 +110,7 @@ public class RustIndexManager extends IndexManager {
 		RustIndexUpdateTask indexUpdateTask = new RustIndexFileTouchedTask(structureInfo, location);
 		
 		structureInfo.setUpdateTask(indexUpdateTask);
-		executor.submitR(indexUpdateTask);
+		executor.submitTask(indexUpdateTask);
 	}
 	
 	private ConcurrentlyDerivedData<SourceFileStructure, ?> getOrCreateStructureInfo(Location location) {
