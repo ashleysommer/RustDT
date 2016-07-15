@@ -34,8 +34,7 @@ abstract class RustIndexUpdateTask extends DataUpdateTask<SourceFileStructure> {
 			try {
 				String source = FileUtil.readFileContents(location, StringUtil.UTF8);
 				RustParseDescribeLauncher parseDescribeLauncher = new RustParseDescribeLauncher(
-					LangCore.getToolManager(),
-					() -> false);
+					LangCore.getToolManager(), this::isCancelled);
 				String parseDescribeStdout = parseDescribeLauncher.getDescribeOutput(source, location);
 				
 				RustParseDescribeParser parseDescribeParser = new RustParseDescribeParser(location, source);
