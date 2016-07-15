@@ -10,6 +10,9 @@
  *******************************************************************************/
 package melnorme.lang.ide.core;
 
+import static melnorme.utilbox.core.Assert.AssertNamespace.assertNotNull;
+
+import melnorme.lang.ide.core.engine.ILanguageServerHandler;
 import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.engine.SourceModelManager;
 import melnorme.lang.ide.core.operations.ToolManager;
@@ -31,6 +34,7 @@ public abstract class AbstractLangCore extends LoggingCore {
 	protected final ILogHandler logHandler;
 	protected final CoreSettings coreSettings;
 	protected final ToolManager toolManager;
+	protected final ILanguageServerHandler languageServerHandler;
 	protected final BundleModelManager<? extends LangBundleModel> bundleManager;
 	protected final BuildManager buildManager;
 	protected final SourceModelManager sourceModelManager;
@@ -41,12 +45,13 @@ public abstract class AbstractLangCore extends LoggingCore {
 		
 		this.logHandler = logHandler;
 		
-		coreSettings = createCoreSettings();
-		toolManager = createToolManager();
-		bundleManager = LangCore_Actual.createBundleModelManager();
-		buildManager = createBuildManager();
-		sourceModelManager = LangCore_Actual.createSourceModelManager();
-		indexManager = LangCore_Actual.createIndexManager();
+		coreSettings = assertNotNull(createCoreSettings());
+		toolManager = assertNotNull(createToolManager());
+		languageServerHandler = assertNotNull(createLanguageServerHandler());
+		bundleManager = assertNotNull(LangCore_Actual.createBundleModelManager());
+		buildManager = assertNotNull(createBuildManager());
+		sourceModelManager = assertNotNull(LangCore_Actual.createSourceModelManager());
+		indexManager = assertNotNull(LangCore_Actual.createIndexManager());
 	}
 	
 	protected void shutdown() {
@@ -54,6 +59,7 @@ public abstract class AbstractLangCore extends LoggingCore {
 		bundleManager.shutdownManager();
 		sourceModelManager.dispose();
 		indexManager.dispose();
+		languageServerHandler.dispose();
 		toolManager.shutdownNow();
 	}
 	
@@ -91,6 +97,12 @@ public abstract class AbstractLangCore extends LoggingCore {
 	
 	public static SourceModelManager getSourceModelManager() {
 		return instance.sourceModelManager;
+	}
+	
+	public abstract ILanguageServerHandler createLanguageServerHandler();
+	
+	public static ILanguageServerHandler getLanguageServerHandler() {
+		return instance.languageServerHandler;
 	}
 	
 	/* -----------------  ----------------- */

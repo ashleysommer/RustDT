@@ -12,6 +12,7 @@ package melnorme.lang.ide.core;
 
 import com.github.rustdt.ide.core.cargomodel.RustBundleModelManager;
 import com.github.rustdt.ide.core.engine.RustIndexManager;
+import com.github.rustdt.ide.core.engine.RustLanguageServerHandler;
 import com.github.rustdt.ide.core.engine.RustSourceModelManager;
 import com.github.rustdt.ide.core.operations.RustBuildManager;
 import com.github.rustdt.ide.core.operations.RustToolManager;
@@ -36,6 +37,8 @@ public class LangCore_Actual extends AbstractLangCore {
 	public static final String VAR_NAME_SdkToolPath = "CARGO_TOOL_PATH";
 	public static final String VAR_NAME_SdkToolPath_DESCRIPTION = "The path of the Cargo tool";
 	
+	public static final String LANGUAGE_SERVER_Name = "Racer/RLS";
+	
 	public LangCore_Actual(ILogHandler logHandler) {
 		super(logHandler);
 	}
@@ -53,6 +56,11 @@ public class LangCore_Actual extends AbstractLangCore {
 	@Override
 	public ToolManager createToolManager() {
 		return new RustToolManager(coreSettings);
+	}
+	
+	@Override
+	public RustLanguageServerHandler createLanguageServerHandler() {
+		return new RustLanguageServerHandler();
 	}
 	
 	public static RustSourceModelManager createSourceModelManager() {

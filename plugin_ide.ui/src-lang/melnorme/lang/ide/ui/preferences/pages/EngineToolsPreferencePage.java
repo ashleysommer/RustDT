@@ -23,11 +23,7 @@ public abstract class EngineToolsPreferencePage extends AbstractPreferencesBlock
 		return null;
 	}
 	
-	/* -----------------  ----------------- */
-	
 	@Override
-	protected LanguageToolsBlock init_createPreferencesBlock(PreferencesPageContext prefContext) {
-		return new LanguageToolsBlock(prefContext);
-	}
+	protected abstract LanguageToolsBlock init_createPreferencesBlock(PreferencesPageContext prefContext);
 	
 }
