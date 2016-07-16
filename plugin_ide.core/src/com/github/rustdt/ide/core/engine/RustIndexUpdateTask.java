@@ -7,6 +7,8 @@ import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData;
 import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData.DataUpdateTask;
+import melnorme.utilbox.concurrency.OperationCancellation;
+import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.misc.FileUtil;
 import melnorme.utilbox.misc.Location;
 import melnorme.utilbox.misc.StringUtil;
@@ -30,7 +32,7 @@ abstract class RustIndexUpdateTask extends DataUpdateTask<SourceFileStructure> {
 		}
 		
 		@Override
-		protected SourceFileStructure createNewData() {
+		protected SourceFileStructure createNewData() throws OperationCancellation {
 			try {
 				String source = FileUtil.readFileContents(location, StringUtil.UTF8);
 				RustParseDescribeLauncher parseDescribeLauncher = new RustParseDescribeLauncher(
@@ -43,7 +45,7 @@ abstract class RustIndexUpdateTask extends DataUpdateTask<SourceFileStructure> {
 				if(fileStructure.getParserProblems().isEmpty()) {
 					return fileStructure;
 				}
-			} catch(Exception e) {
+			} catch(CommonException e) {
 				LangCore.logError("Could not parse file: " + location, e);
 			}
 			return null;
