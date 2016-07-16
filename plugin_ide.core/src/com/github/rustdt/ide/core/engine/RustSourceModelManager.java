@@ -15,6 +15,7 @@ import com.github.rustdt.tooling.ops.RustParseDescribeParser;
 
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.SourceModelManager;
+import melnorme.lang.ide.core.engine.StructureUpdateTask;
 import melnorme.lang.ide.core.operations.ToolManager;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.utilbox.concurrency.OperationCancellation;
