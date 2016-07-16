@@ -17,17 +17,16 @@ import com.github.rustdt.ide.core.engine.RustIndexUpdateTask.RustIndexFileTouche
 
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.IndexManager;
+import melnorme.lang.ide.core.engine.StructureResult;
 import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
-import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
-import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData;
 import melnorme.utilbox.misc.Location;
 
 public class RustIndexManager extends IndexManager {
 	private final GlobalSourceStructure sourceStructure = new GlobalSourceStructure();
 	
-	private final Map<Location, ConcurrentlyDerivedData<SourceFileStructure, ?>> startedIndexUpdates = new HashMap<>();
+	private final Map<Location, StructureResult> startedIndexUpdates = new HashMap<>();
 	
 	private final IResourceChangeListener resourcesChanged = this::processResourceChangeEvent;
 	
@@ -96,7 +95,7 @@ public class RustIndexManager extends IndexManager {
 	private void enqueueFileRemovedTask(Location location) {
 		System.out.println("RustIndexManager - File removed: " + location);
 		
-		ConcurrentlyDerivedData<SourceFileStructure, ?> sourceFileStructure = getOrCreateStructureInfo(location);
+		StructureResult sourceFileStructure = getOrCreateStructureInfo(location);
 		RustIndexUpdateTask indexUpdateTask = new RustIndexFileRemovedTask(sourceFileStructure, location);
 		
 		sourceFileStructure.setUpdateTask(indexUpdateTask);
@@ -106,15 +105,15 @@ public class RustIndexManager extends IndexManager {
 	private void enqueueFileTouchedTask(Location location) {
 		System.out.println("RustIndexManager - File touched: " + location);
 		
-		ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo = getOrCreateStructureInfo(location);
+		StructureResult structureInfo = getOrCreateStructureInfo(location);
 		RustIndexUpdateTask indexUpdateTask = new RustIndexFileTouchedTask(structureInfo, location);
 		
 		structureInfo.setUpdateTask(indexUpdateTask);
 		executor.submitTask(indexUpdateTask);
 	}
 	
-	private ConcurrentlyDerivedData<SourceFileStructure, ?> getOrCreateStructureInfo(Location location) {
-		ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo = startedIndexUpdates.get(location);
+	private StructureResult getOrCreateStructureInfo(Location location) {
+		StructureResult structureInfo = startedIndexUpdates.get(location);
 		if(structureInfo == null) {
 			structureInfo = createStructureInfo();
 			startedIndexUpdates.put(location, structureInfo);
@@ -122,11 +121,11 @@ public class RustIndexManager extends IndexManager {
 		return structureInfo;
 	}
 	
-	private ConcurrentlyDerivedData<SourceFileStructure, ?> createStructureInfo() {
-		return new ConcurrentlyDerivedData<SourceFileStructure, ConcurrentlyDerivedData<?, ?>>() {
+	private StructureResult createStructureInfo() {
+		return new StructureResult() {
 			@Override
 			protected void doHandleDataChanged() {
-				sourceStructure.updateIndex(getStoredData());
+				sourceStructure.updateIndex(getStoredData().getOrNull());
 			}
 		};
 	}

@@ -7,8 +7,13 @@ import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData.DataUpdateTask;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.core.fntypes.CommonResult;
+import melnorme.utilbox.misc.Location;
 
 public abstract class StructureUpdateTask extends DataUpdateTask<CommonResult<SourceFileStructure>> {
+	public StructureUpdateTask(StructureResult structureResult, Location location) {
+		super(structureResult, location.toString());
+	}
+	
 	public StructureUpdateTask(StructureInfo structureInfo) {
 		super(structureInfo, structureInfo.getKey2().toString());
 	}
