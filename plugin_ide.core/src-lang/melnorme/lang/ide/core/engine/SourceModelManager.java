@@ -130,7 +130,6 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 		protected IDocument document = null;
 		protected DocumentReconcileConnection reconcileConnection = null;
 		
-		
 		public StructureInfo(LocationKey key) {
 			super();
 			this.key2 = assertNotNull(key);
@@ -250,11 +249,8 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 	
 	public static abstract class StructureUpdateTask extends DataUpdateTask<CommonResult<SourceFileStructure>> {
 		
-		protected final StructureInfo structureInfo;
-		
 		public StructureUpdateTask(StructureInfo structureInfo) {
 			super(structureInfo, structureInfo.getKey2().toString());
-			this.structureInfo = structureInfo;
 		}
 		
 		@Override
@@ -276,14 +272,15 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 	}
 	
 	public static class DisconnectUpdatesTask extends StructureUpdateTask {
+		private final Location location;
 		
 		public DisconnectUpdatesTask(StructureInfo structureInfo) {
 			super(structureInfo);
+			this.location = structureInfo.getLocation();
 		}
 		
 		@Override
 		protected SourceFileStructure doCreateNewData() throws OperationCancellation {
-			Location location = structureInfo.getLocation();
 			if(location != null) {
 				handleDisconnectForLocation(location);
 			} else {
@@ -302,7 +299,6 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 		}
 		
 	}
-	
 	
 	/* ----------------- Listeners ----------------- */
 	

@@ -34,11 +34,12 @@ public class RustSourceModelManager extends SourceModelManager {
 	}
 	
 	public class RustStructureUpdateTask extends StructureUpdateTask {
-		
-		protected final String source;
+		private final String source;
+		private final StructureInfo structureInfo;
 		
 		public RustStructureUpdateTask(StructureInfo structureInfo, String source) {
 			super(structureInfo);
+			this.structureInfo = structureInfo;
 			this.source = source;
 		}
 		
