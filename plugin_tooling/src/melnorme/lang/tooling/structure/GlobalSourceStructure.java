@@ -1,9 +1,11 @@
 package melnorme.lang.tooling.structure;
 
 import static java.util.Comparator.comparing;
+import static melnorme.utilbox.core.Assert.AssertNamespace.assertTrue;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -18,10 +20,24 @@ public class GlobalSourceStructure {
 		StructureElementKind.EXTERN_CRATE, StructureElementKind.USE_GROUP, StructureElementKind.USE,
 		StructureElementKind.VAR);
 	
-	private final SortedMap<Location, SortedSet<StructureElement>> aggregatedElements = new TreeMap<>(
-		comparing(Location::toPath));
+	private final SortedMap<Location, SortedSet<StructureElement>> index = new TreeMap<>(comparing(Location::toPath));
 	
-	public synchronized void fileTouched(Location location, SourceFileStructure fileStructure) {
+	public synchronized void updateIndex(SourceFileStructure fileStructure) {
+		Optional<Location> location = fileStructure.getLocation();
+		assertTrue(location.isPresent(), "Location is missing");
+		
+		if(fileStructure.getChildren().isEmpty()) {
+			removeFromIndex(location.get());
+		} else {
+			putToIndex(fileStructure, location.get());
+		}
+	}
+	
+	private void removeFromIndex(Location location) {
+		index.remove(location);
+	}
+	
+	private void putToIndex(SourceFileStructure fileStructure, Location location) {
 		SortedSet<StructureElement> elementsAtLocation = new TreeSet<>(comparing(StructureElement::getName));
 		
 		fileStructure.visitSubTree(el -> {
@@ -30,16 +46,11 @@ public class GlobalSourceStructure {
 			}
 		});
 		
-		aggregatedElements.put(location, elementsAtLocation);
-	}
-	
-	public synchronized void fileRemoved(Location location) {
-		aggregatedElements.remove(location);
+		index.put(location, elementsAtLocation);
 	}
 	
 	public synchronized List<StructureElement> getGlobalSourceStructure() {
-		return aggregatedElements
-			.values()
+		return index.values()
 			.stream()
 			.flatMap(Set::stream)
 			.collect(Collectors.toList());

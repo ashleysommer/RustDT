@@ -27,7 +27,7 @@ import melnorme.utilbox.misc.Location;
 public class RustIndexManager extends IndexManager {
 	private final GlobalSourceStructure sourceStructure = new GlobalSourceStructure();
 	
-	private final Map<Location, ConcurrentlyDerivedData<SourceFileStructure, ?>> runningUpdates = new HashMap<>();
+	private final Map<Location, ConcurrentlyDerivedData<SourceFileStructure, ?>> startedIndexUpdates = new HashMap<>();
 	
 	private final IResourceChangeListener resourcesChanged = this::processResourceChangeEvent;
 	
@@ -114,24 +114,19 @@ public class RustIndexManager extends IndexManager {
 	}
 	
 	private ConcurrentlyDerivedData<SourceFileStructure, ?> getOrCreateStructureInfo(Location location) {
-		ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo = runningUpdates.get(location);
+		ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo = startedIndexUpdates.get(location);
 		if(structureInfo == null) {
-			structureInfo = createStructureInfo(location);
-			runningUpdates.put(location, structureInfo);
+			structureInfo = createStructureInfo();
+			startedIndexUpdates.put(location, structureInfo);
 		}
 		return structureInfo;
 	}
 	
-	private ConcurrentlyDerivedData<SourceFileStructure, ?> createStructureInfo(Location location) {
+	private ConcurrentlyDerivedData<SourceFileStructure, ?> createStructureInfo() {
 		return new ConcurrentlyDerivedData<SourceFileStructure, ConcurrentlyDerivedData<?, ?>>() {
 			@Override
 			protected void doHandleDataChanged() {
-				SourceFileStructure storedData = getStoredData();
-				if(storedData == null) {
-					sourceStructure.fileRemoved(location);
-				} else {
-					sourceStructure.fileTouched(location, storedData);
-				}
+				sourceStructure.updateIndex(getStoredData());
 			}
 		};
 	}

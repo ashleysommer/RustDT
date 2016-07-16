@@ -7,6 +7,7 @@ import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData;
 import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData.DataUpdateTask;
+import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.CommonException;
 import melnorme.utilbox.misc.FileUtil;
@@ -27,7 +28,7 @@ abstract class RustIndexUpdateTask extends DataUpdateTask<SourceFileStructure> {
 		private final Location location;
 		
 		RustIndexFileTouchedTask(ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo, Location location) {
-			super(structureInfo, "Removing " + location);
+			super(structureInfo, "Updating index for " + location);
 			this.location = location;
 		}
 		
@@ -42,24 +43,27 @@ abstract class RustIndexUpdateTask extends DataUpdateTask<SourceFileStructure> {
 				RustParseDescribeParser parseDescribeParser = new RustParseDescribeParser(location, source);
 				SourceFileStructure fileStructure = parseDescribeParser.parse(parseDescribeStdout);
 				
-				if(fileStructure.getParserProblems().isEmpty()) {
+				if(fileStructure.getParserProblems().isEmpty() || !fileStructure.getChildren().isEmpty()) {
 					return fileStructure;
 				}
 			} catch(CommonException e) {
 				LangCore.logError("Could not parse file: " + location, e);
 			}
-			return null;
+			return new SourceFileStructure(location, Indexable.EMPTY_INDEXABLE, Indexable.EMPTY_INDEXABLE);
 		}
 	}
 	
 	static class RustIndexFileRemovedTask extends RustIndexUpdateTask {
+		private final Location location;
+		
 		RustIndexFileRemovedTask(ConcurrentlyDerivedData<SourceFileStructure, ?> structureInfo, Location location) {
-			super(structureInfo, "Removing " + location);
+			super(structureInfo, "Removing index for " + location);
+			this.location = location;
 		}
 		
 		@Override
 		protected SourceFileStructure createNewData() {
-			return null;
+			return new SourceFileStructure(location, Indexable.EMPTY_INDEXABLE, Indexable.EMPTY_INDEXABLE);
 		}
 	}
 }
