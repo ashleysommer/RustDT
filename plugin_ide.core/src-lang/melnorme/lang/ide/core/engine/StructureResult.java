@@ -4,5 +4,5 @@ import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData;
 import melnorme.utilbox.core.fntypes.CommonResult;
 
-public class StructureResult extends ConcurrentlyDerivedData<CommonResult<SourceFileStructure>, StructureResult> {
+public abstract class StructureResult<SELF> extends ConcurrentlyDerivedData<CommonResult<SourceFileStructure>, SELF> {
 }

@@ -10,7 +10,7 @@ import melnorme.utilbox.core.fntypes.CommonResult;
 import melnorme.utilbox.misc.Location;
 
 public abstract class StructureUpdateTask extends DataUpdateTask<CommonResult<SourceFileStructure>> {
-	public StructureUpdateTask(StructureResult structureResult, Location location) {
+	public StructureUpdateTask(StructureResult<?> structureResult, Location location) {
 		super(structureResult, location.toString());
 	}
 	

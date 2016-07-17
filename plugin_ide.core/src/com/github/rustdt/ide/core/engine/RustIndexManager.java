@@ -12,8 +12,9 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.ResourcesPlugin;
 
-import com.github.rustdt.ide.core.engine.RustIndexUpdateTask.RustIndexFileRemovedTask;
-import com.github.rustdt.ide.core.engine.RustIndexUpdateTask.RustIndexFileTouchedTask;
+import com.github.rustdt.ide.core.engine.RustStructureUpdateTask.RustStructureFileRemovedTask;
+import com.github.rustdt.ide.core.engine.RustStructureUpdateTask.RustStructureSourceTouchedTask;
+import com.github.rustdt.ide.core.engine.RustStructureUpdateTask.SourceProvider;
 
 import melnorme.lang.ide.core.LangCore;
 import melnorme.lang.ide.core.engine.IndexManager;
@@ -21,12 +22,14 @@ import melnorme.lang.ide.core.engine.StructureResult;
 import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
 import melnorme.lang.tooling.structure.StructureElement;
+import melnorme.utilbox.misc.FileUtil;
 import melnorme.utilbox.misc.Location;
+import melnorme.utilbox.misc.StringUtil;
 
 public class RustIndexManager extends IndexManager {
 	private final GlobalSourceStructure sourceStructure = new GlobalSourceStructure();
 	
-	private final Map<Location, StructureResult> startedIndexUpdates = new HashMap<>();
+	private final Map<Location, StructureInfo> startedIndexUpdates = new HashMap<>();
 	
 	private final IResourceChangeListener resourcesChanged = this::processResourceChangeEvent;
 	
@@ -95,39 +98,39 @@ public class RustIndexManager extends IndexManager {
 	private void enqueueFileRemovedTask(Location location) {
 		System.out.println("RustIndexManager - File removed: " + location);
 		
-		StructureResult sourceFileStructure = getOrCreateStructureInfo(location);
-		RustIndexUpdateTask indexUpdateTask = new RustIndexFileRemovedTask(sourceFileStructure, location);
+		StructureInfo structureInfo = getOrCreateStructureInfo(location);
+		RustStructureUpdateTask indexUpdateTask = new RustStructureFileRemovedTask(structureInfo, location);
 		
-		sourceFileStructure.setUpdateTask(indexUpdateTask);
+		structureInfo.setUpdateTask(indexUpdateTask);
 		executor.submitTask(indexUpdateTask);
 	}
 	
 	private void enqueueFileTouchedTask(Location location) {
 		System.out.println("RustIndexManager - File touched: " + location);
 		
-		StructureResult structureInfo = getOrCreateStructureInfo(location);
-		RustIndexUpdateTask indexUpdateTask = new RustIndexFileTouchedTask(structureInfo, location);
+		StructureInfo structureInfo = getOrCreateStructureInfo(location);
+		
+		SourceProvider sourceProvider = () -> FileUtil.readFileContents(location, StringUtil.UTF8);
+		RustStructureUpdateTask indexUpdateTask = new RustStructureSourceTouchedTask(structureInfo, location, sourceProvider);
 		
 		structureInfo.setUpdateTask(indexUpdateTask);
 		executor.submitTask(indexUpdateTask);
 	}
 	
-	private StructureResult getOrCreateStructureInfo(Location location) {
-		StructureResult structureInfo = startedIndexUpdates.get(location);
+	private StructureInfo getOrCreateStructureInfo(Location location) {
+		StructureInfo structureInfo = startedIndexUpdates.get(location);
 		if(structureInfo == null) {
-			structureInfo = createStructureInfo();
+			structureInfo = new StructureInfo();
 			startedIndexUpdates.put(location, structureInfo);
 		}
 		return structureInfo;
 	}
 	
-	private StructureResult createStructureInfo() {
-		return new StructureResult() {
-			@Override
-			protected void doHandleDataChanged() {
-				sourceStructure.updateIndex(getStoredData().getOrNull());
-			}
-		};
+	private class StructureInfo extends StructureResult<StructureInfo> {
+		@Override
+		protected void doHandleDataChanged() {
+			sourceStructure.updateIndex(getStoredData().getOrNull());
+		}
 	}
 	
 	@Override

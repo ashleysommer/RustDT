@@ -10,12 +10,10 @@ import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.CommonException;
-import melnorme.utilbox.misc.FileUtil;
 import melnorme.utilbox.misc.Location;
-import melnorme.utilbox.misc.StringUtil;
 
-abstract class RustIndexUpdateTask extends StructureUpdateTask {
-	RustIndexUpdateTask(StructureResult derivedData, Location location) {
+abstract class RustStructureUpdateTask extends StructureUpdateTask {
+	RustStructureUpdateTask(StructureResult<?> derivedData, Location location) {
 		super(derivedData, location);
 	}
 	
@@ -24,17 +22,23 @@ abstract class RustIndexUpdateTask extends StructureUpdateTask {
 		LangCore.logInternalError(e);
 	}
 	
-	static class RustIndexFileTouchedTask extends RustIndexUpdateTask {
+	interface SourceProvider {
+		String provideSource() throws CommonException;
+	}
+	
+	static class RustStructureSourceTouchedTask extends RustStructureUpdateTask {
 		private final Location location;
+		private final SourceProvider sourceProvider;
 		
-		RustIndexFileTouchedTask(StructureResult structureResult, Location location) {
+		RustStructureSourceTouchedTask(StructureResult<?> structureResult, Location location, SourceProvider sourceProvider) {
 			super(structureResult, location);
 			this.location = location;
+			this.sourceProvider = sourceProvider;
 		}
 		
 		@Override
 		protected SourceFileStructure doCreateNewData() throws OperationCancellation, CommonException {
-			String source = FileUtil.readFileContents(location, StringUtil.UTF8);
+			String source = sourceProvider.provideSource();
 			RustParseDescribeLauncher parseDescribeLauncher = new RustParseDescribeLauncher(
 				LangCore.getToolManager(), this::isCancelled);
 			String parseDescribeStdout = parseDescribeLauncher.getDescribeOutput(source, location);
@@ -50,10 +54,10 @@ abstract class RustIndexUpdateTask extends StructureUpdateTask {
 		}
 	}
 	
-	static class RustIndexFileRemovedTask extends RustIndexUpdateTask {
+	static class RustStructureFileRemovedTask extends RustStructureUpdateTask {
 		private final Location location;
 		
-		RustIndexFileRemovedTask(StructureResult structureResult, Location location) {
+		RustStructureFileRemovedTask(StructureResult<?> structureResult, Location location) {
 			super(structureResult, location);
 			this.location = location;
 		}

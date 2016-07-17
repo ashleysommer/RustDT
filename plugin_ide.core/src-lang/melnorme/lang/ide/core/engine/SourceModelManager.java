@@ -19,7 +19,6 @@ import org.eclipse.jface.text.IDocument;
 import melnorme.lang.ide.core.engine.DocumentReconcileManager.DocumentReconcileConnection;
 import melnorme.lang.tooling.LocationKey;
 import melnorme.lang.tooling.structure.SourceFileStructure;
-import melnorme.lang.utils.concurrency.ConcurrentlyDerivedData;
 import melnorme.lang.utils.concurrency.SynchronizedEntryMap;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.fntypes.CommonResult;
@@ -119,7 +118,7 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 	
 	/* -----------------  ----------------- */
 	
-	public class StructureInfo extends ConcurrentlyDerivedData<CommonResult<SourceFileStructure>, StructureInfo> {
+	public class StructureInfo extends StructureResult<StructureInfo> {
 		
 		protected final LocationKey key2;
 		protected final StructureUpdateTask disconnectTask; // Can be null
