@@ -21,6 +21,7 @@ import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.engine.StructureResult;
 import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
+import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
 import melnorme.utilbox.misc.FileUtil;
 import melnorme.utilbox.misc.Location;
@@ -111,7 +112,8 @@ public class RustIndexManager extends IndexManager {
 		StructureInfo structureInfo = getOrCreateStructureInfo(location);
 		
 		SourceProvider sourceProvider = () -> FileUtil.readFileContents(location, StringUtil.UTF8);
-		RustStructureUpdateTask indexUpdateTask = new RustStructureSourceTouchedTask(structureInfo, location, sourceProvider);
+		RustStructureUpdateTask indexUpdateTask =
+			new RustStructureSourceTouchedTask(structureInfo, location, sourceProvider);
 		
 		structureInfo.setUpdateTask(indexUpdateTask);
 		executor.submitTask(indexUpdateTask);
@@ -129,7 +131,10 @@ public class RustIndexManager extends IndexManager {
 	private class StructureInfo extends StructureResult<StructureInfo> {
 		@Override
 		protected void doHandleDataChanged() {
-			sourceStructure.updateIndex(getStoredData().getOrNull());
+			Optional<SourceFileStructure> structure = super.getStructure();
+			if(structure.isPresent()) {
+				sourceStructure.updateIndex(structure.get());
+			}
 		}
 	}
 	

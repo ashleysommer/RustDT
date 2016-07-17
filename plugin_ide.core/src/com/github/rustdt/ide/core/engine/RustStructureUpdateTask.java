@@ -27,12 +27,10 @@ abstract class RustStructureUpdateTask extends StructureUpdateTask {
 	}
 	
 	static class RustStructureSourceTouchedTask extends RustStructureUpdateTask {
-		private final Location location;
 		private final SourceProvider sourceProvider;
 		
 		RustStructureSourceTouchedTask(StructureResult<?> structureResult, Location location, SourceProvider sourceProvider) {
 			super(structureResult, location);
-			this.location = location;
 			this.sourceProvider = sourceProvider;
 		}
 		
@@ -44,22 +42,13 @@ abstract class RustStructureUpdateTask extends StructureUpdateTask {
 			String parseDescribeStdout = parseDescribeLauncher.getDescribeOutput(source, location);
 			
 			RustParseDescribeParser parseDescribeParser = new RustParseDescribeParser(location, source);
-			SourceFileStructure fileStructure = parseDescribeParser.parse(parseDescribeStdout);
-			
-			if(fileStructure.getParserProblems().isEmpty() || !fileStructure.getChildren().isEmpty()) {
-				return fileStructure;
-			} else {
-				return new SourceFileStructure(location, Indexable.EMPTY_INDEXABLE, Indexable.EMPTY_INDEXABLE);
-			}
+			return parseDescribeParser.parse(parseDescribeStdout);
 		}
 	}
 	
 	static class RustStructureFileRemovedTask extends RustStructureUpdateTask {
-		private final Location location;
-		
 		RustStructureFileRemovedTask(StructureResult<?> structureResult, Location location) {
 			super(structureResult, location);
-			this.location = location;
 		}
 		
 		@Override

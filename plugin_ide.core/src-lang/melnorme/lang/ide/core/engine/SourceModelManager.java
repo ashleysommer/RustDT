@@ -244,11 +244,8 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 	}
 	
 	public static class DisconnectUpdatesTask extends StructureUpdateTask {
-		private final Location location;
-		
 		public DisconnectUpdatesTask(StructureInfo structureInfo) {
 			super(structureInfo);
-			this.location = structureInfo.getLocation();
 		}
 		
 		@Override
