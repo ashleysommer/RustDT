@@ -25,6 +25,7 @@ import melnorme.lang.ide.core.tests.CommonCoreTest;
 import melnorme.lang.tooling.LocationKey;
 import melnorme.lang.tooling.common.ParserError;
 import melnorme.lang.tooling.structure.SourceFileStructure;
+import melnorme.utilbox.collections.ArrayList2;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.concurrency.OperationCancellation;
 import melnorme.utilbox.core.Assert.AssertFailedException;
@@ -177,7 +178,7 @@ public class StructureModelTest extends CommonCoreTest {
 			} catch(InterruptedException e) {
 				throw new OperationCancellation();
 			}
-			return null;
+			return new SourceFileStructure(null, ArrayList2.create(), ArrayList2.create());
 		});
 		
 		StructureModelRegistration registration = mgr.connectStructureUpdates(key, doc,

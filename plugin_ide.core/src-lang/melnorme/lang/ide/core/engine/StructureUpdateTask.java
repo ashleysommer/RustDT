@@ -21,7 +21,7 @@ public abstract class StructureUpdateTask extends DataUpdateTask<CommonResult<So
 	}
 	
 	public StructureUpdateTask(StructureResult<?> structureResult, Location location) {
-		super(structureResult, location.toString());
+		super(structureResult, location != null ? location.toString() : null);
 		this.structureResult = structureResult;
 		this.location = location;
 	}

@@ -10,10 +10,8 @@
  *******************************************************************************/
 package melnorme.utilbox.concurrency;
 
-import java.util.concurrent.FutureTask;
-
 public abstract class AbstractRunnableFuture2<RET> extends AbstractFuture2<RET> 
-	implements IRunnableFuture2<RET>	
+	implements IRunnableFuture2<RET>
 {
 	
 	public AbstractRunnableFuture2() {
@@ -21,28 +19,48 @@ public abstract class AbstractRunnableFuture2<RET> extends AbstractFuture2<RET>
 	}
 	
 	/**
-	 * FutureTask is only used to wrap the internalTaskRun method, so that
-	 * - internalTaskRun not run if task already cancelled.
-	 * - if a thread is currently running the future, interrupt the thread if future is cancelled
+	 * CancellableTask is use for:
+	 * - not run task if task already cancelled.
+	 * - if a thread is currently running the internalTaskRun, interrupt the thread if future is cancelled.
 	 */
-	private final FutureTask<RET> futureTask = new FutureTask<RET>(this::internalTaskRun, null);
+	private final CancellableTask cancellableTask = new CancellableTask() {
+		@Override
+		protected void doRun() {
+			AbstractRunnableFuture2.this.internalTaskRun();
+		}
+	};
 	
 	@Override
-	public final void run() {
-		futureTask.run();
+	public boolean canExecute() {
+		return cancellableTask.canExecute();
+	}
+	
+	@Override
+	public void run() {
+		runFuture();
+	}
+	
+	protected void runFuture() {
+		cancellableTask.run();
 	}
 	
 	protected void internalTaskRun() {
-		completableResult.setResult(invokeToResult());
+		completableResult.setResultFromCallable(this::internalInvoke);
 	}
 	
-	protected abstract RET invokeToResult();
+	protected abstract RET internalInvoke();
+	
+	
+	public void completeWithResult(RET result) {
+		cancellableTask.markExecuted();
+		completableResult.setResult(result);
+	}
 	
 	/* -----------------  ----------------- */
 	
 	@Override
 	protected void handleCancellation() {
-		futureTask.cancel(true);
+		cancellableTask.tryCancel();
 	}
 	
 }

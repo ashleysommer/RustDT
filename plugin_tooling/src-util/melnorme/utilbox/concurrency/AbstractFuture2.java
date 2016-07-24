@@ -32,8 +32,8 @@ public abstract class AbstractFuture2<RET> implements Future2<RET> {
 	}
 	
 	@Override
-	public boolean isDone() {
-		return completableResult.isDone();
+	public boolean isTerminated() {
+		return completableResult.isTerminated();
 	}
 	
 	@Override
@@ -50,19 +50,24 @@ public abstract class AbstractFuture2<RET> implements Future2<RET> {
 	}
 	
 	@Override
-	public RET awaitResult() throws InterruptedException, OperationCancellation {
-		return completableResult.awaitResult();
+	public void awaitTermination() throws InterruptedException {
+		completableResult.awaitTermination();
 	}
 	
 	@Override
-	public RET awaitResult(long timeout, TimeUnit unit) 
-			throws InterruptedException, TimeoutException, OperationCancellation {
-		return completableResult.awaitResult(timeout, unit);
+	public void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+		completableResult.awaitTermination(timeout, unit);
+	}
+	
+	@Override
+	public RET getResult_forSuccessfulyCompleted() {
+		assertTrue(isCompletedSuccessfully());
+		return completableResult.getResult_forSuccessfulyCompleted();
 	}
 	
 	/* -----------------  ----------------- */ 
 	
-	public Future<RET> asFuture1() {
+	public Future<RET> asJavaUtilFuture() {
 		return asFuture;
 	}
 	
@@ -80,7 +85,7 @@ public abstract class AbstractFuture2<RET> implements Future2<RET> {
 		
 		@Override
 		public boolean isDone() {
-			return AbstractFuture2.this.isDone();
+			return AbstractFuture2.this.isTerminated();
 		}
 		
 		@Override
@@ -114,7 +119,7 @@ public abstract class AbstractFuture2<RET> implements Future2<RET> {
 		
 		public CompletedFuture(RET result) {
 			completableResult.setResult(result);
-			assertTrue(isCompletedWithResult());
+			assertTrue(isCompletedSuccessfully());
 		}
 		
 		@Override

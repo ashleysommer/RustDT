@@ -121,7 +121,6 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 	public class StructureInfo extends StructureResult<StructureInfo> {
 		
 		protected final LocationKey key2;
-		protected final StructureUpdateTask disconnectTask; // Can be null
 		
 		protected IDocument document = null;
 		protected DocumentReconcileConnection reconcileConnection = null;
@@ -129,8 +128,6 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 		public StructureInfo(LocationKey key) {
 			super();
 			this.key2 = assertNotNull(key);
-			
-			this.disconnectTask = assertNotNull(createDisconnectTask(this));
 		}
 		
 		public final LocationKey getKey2() {
@@ -183,7 +180,7 @@ public abstract class SourceModelManager extends AbstractAgentManager {
 				
 				document = null;
 				
-				queueUpdateTask(disconnectTask);
+				queueUpdateTask(createDisconnectTask(this));
 			}
 		}
 		

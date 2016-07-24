@@ -14,42 +14,62 @@ import static melnorme.utilbox.core.Assert.AssertNamespace.assertFail;
 import static melnorme.utilbox.core.Assert.AssertNamespace.assertNotNull;
 import static melnorme.utilbox.core.Assert.AssertNamespace.assertTrue;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 
-import melnorme.utilbox.concurrency.ICancelMonitor.CancelMonitor;
 import melnorme.utilbox.concurrency.ICancelMonitor;
+import melnorme.utilbox.concurrency.ICancelMonitor.CancelMonitor;
+import melnorme.utilbox.concurrency.ICancelMonitor.CancelMonitorWithLatch;
 import melnorme.utilbox.concurrency.OperationCancellation;
+import melnorme.utilbox.core.fntypes.Result;
 import melnorme.utilbox.tests.CommonTest;
 
 public class ExternalProcessHelper_Test extends CommonTest {
 	
-	public static class MockProcess extends Process {
-
-		protected final CancelMonitor terminationMonitor;
+	public static class EndlessInputStream extends InputStream {
 		
-		protected final EndlessInputStream stdoutStream = new EndlessInputStream();
-		protected final EndlessInputStream stderrStream = new EndlessInputStream();
-
-		public MockProcess(CancelMonitor cancelMonitor) {
-			this.terminationMonitor = assertNotNull(cancelMonitor);
+		protected final ICancelMonitor processTerminationMonitor;
+		
+		protected volatile boolean closed = false;
+		protected volatile int count = 0;
+		
+		public EndlessInputStream(ICancelMonitor processTerminationMonitor) {
+			this.processTerminationMonitor = assertNotNull(processTerminationMonitor);
 		}
 		
-		public class EndlessInputStream extends InputStream {
-			
-			@Override
-			public int read() throws IOException {
-				if(terminationMonitor.isCanceled()) {
-					return -1;
-				}
-				return 0;
+		@Override
+		public void close() {
+			closed = true;
+		}
+		
+		@Override
+		public int read() {
+			if(closed || processTerminationMonitor.isCancelled()) {
+				return -1;
 			}
+			++count;
+			if(count % 1000 == 0) {
+				try {
+					Thread.sleep(20);
+				} catch(InterruptedException e) {
+				}
+			}
+			return 0;
 		}
+	}
 
+	public static class MockProcess extends Process {
+		
+		protected final CancelMonitorWithLatch processTerminationMonitor = new CancelMonitorWithLatch();
+		protected final EndlessInputStream stdoutStream = new EndlessInputStream(processTerminationMonitor);
+		protected final EndlessInputStream stderrStream = new EndlessInputStream(processTerminationMonitor);
+		
+		public MockProcess() {
+		}
+		
 		@Override
 		public OutputStream getOutputStream() {
 			throw assertFail();
@@ -67,13 +87,13 @@ public class ExternalProcessHelper_Test extends CommonTest {
 		
 		@Override
 		public int waitFor() throws InterruptedException {
-			terminationMonitor.getCancelLatch().await();
+			processTerminationMonitor.getCancelLatch().await();
 			return exitValue();
 		}
 		
 		@Override
 		public int exitValue() {
-			if(!terminationMonitor.isCanceled()) {
+			if(!processTerminationMonitor.isCancelled()) {
 				throw new IllegalThreadStateException();
 			}
 			return 0;
@@ -81,16 +101,32 @@ public class ExternalProcessHelper_Test extends CommonTest {
 		
 		@Override
 		public void destroy() {
-			terminationMonitor.cancel();
+			stdoutStream.close();
+			stderrStream.close();
+			processTerminationMonitor.cancel();
 		}
 	}
 	
-	public static class TestsExternalProcessHelper extends ExternalProcessHelper {
+	public static class EndlessReadTask extends ReaderTask<Void> {
+		
+		public EndlessReadTask(InputStream is, ICancelMonitor cancelMonitor) {
+			super(is, cancelMonitor);
+		}
+		
+		@Override
+		protected Void doGetReturnValue() {
+			return null;
+		}
+		
+	}
+	
+	public static class TestsExternalProcessHelper 
+		extends ExternalProcessHandler<EndlessReadTask, EndlessReadTask> {
 		
 		protected final MockProcess mockProcess;
 		
 		public TestsExternalProcessHelper(boolean readStdErr, boolean startReaders, ICancelMonitor cancelMonitor) {
-			this(new MockProcess(new CancelMonitor()), readStdErr, startReaders, cancelMonitor);
+			this(new MockProcess(), readStdErr, startReaders, cancelMonitor);
 		}
 		
 		public TestsExternalProcessHelper(MockProcess mockProcess, boolean readStdErr,
@@ -100,47 +136,57 @@ public class ExternalProcessHelper_Test extends CommonTest {
 		}
 		
 		@Override
-		protected Runnable createMainReaderTask() {
-			mainReader = new EndlessReadTask(process.getInputStream());
-			return mainReader.runnableFuture;
+		protected EndlessReadTask init_StdOutReaderTask() {
+			return new EndlessReadTask(process.getInputStream(), cancelMonitor);
 		}
 		
 		@Override
-		protected Runnable createStdErrReaderTask() {
-			stderrReader = new EndlessReadTask(process.getErrorStream());
-			return stderrReader.runnableFuture;
+		protected EndlessReadTask init_StdErrReaderTask() {
+			return new EndlessReadTask(process.getErrorStream(), cancelMonitor);
 		}
 		
-		public class EndlessReadTask extends ReadAllBytesTask {
-			
-			public EndlessReadTask(InputStream is) {
-				super(is);
-			}
-			
-			@Override
-			protected void notifyReadChunk(byte[] buffer, int offset, int readCount) {
-				byteArray.reset();
-			}
+		@Override
+		protected void completeStderrResult(EndlessReadTask stderrReaderTask) {
+			stderrReaderTask.completeWithResult(new Result<>(null));
 		}
+		
 	}
 	
 	@Test
 	public void test() throws Exception { test$(); }
 	public void test$() {
 		for(int i = 0; i < 10; i++) {
-			test_process_death();
-			test_cancellation();
-			test_cancellation_vs_interrupt();
+			do_tests();
 		}
 	}
 	
-	protected void check_awaitTermination(TestsExternalProcessHelper eph, boolean destroyOnError)
-			throws InterruptedException, OperationCancellation, IOException {
-		eph.awaitTerminationAndResult(destroyOnError);
+	protected void do_tests() {
+		test_process_death();
+		test_process_streams_close();
+		test_cancellation();
+		test_cancellation_vs_interrupt();
+	}
+	
+	protected void check_awaitProcessTermination(TestsExternalProcessHelper eph, 
+			Class<? extends Throwable> expectedThrows, boolean awaitProcessTermination) {
 		
+		verifyThrows(() -> eph.awaitTermination(false), expectedThrows);
+		
+		checkReaderThreadsTerminate(eph, awaitProcessTermination);
+	}
+	
+	protected void checkReaderThreadsTerminate(TestsExternalProcessHelper eph, boolean awaitProcessTermination) {
 		// ensure threads terminate
-		eph.mainReaderThread.join();
-		eph.stderrReaderThread.join();
+		checkThreadJoin(eph.stderrReaderThread);
+		try {
+			eph.stdoutReaderTask.awaitTermination();
+			eph.stderrReaderTask.awaitTermination();
+		} catch(InterruptedException e) {
+			assertFail();
+		}
+		if(awaitProcessTermination) {
+			checkThreadJoin(eph.mainReaderThread);
+		}
 	}
 	
 	protected void test_process_death() {
@@ -149,7 +195,17 @@ public class ExternalProcessHelper_Test extends CommonTest {
 		// Test process death
 		eph.mockProcess.destroy();
 		
-		verifyThrows(() -> check_awaitTermination(eph, false), null);
+		check_awaitProcessTermination(eph, null, true);
+	}
+	
+	protected void test_process_streams_close() {
+		TestsExternalProcessHelper eph = new TestsExternalProcessHelper(true, true, null);
+		
+		// Test process death
+		eph.mockProcess.stderrStream.close();
+		eph.mockProcess.stdoutStream.close();
+		
+		checkReaderThreadsTerminate(eph, false);
 	}
 	
 	protected void test_cancellation() {
@@ -158,11 +214,15 @@ public class ExternalProcessHelper_Test extends CommonTest {
 		
 		cancelMonitor.cancel();
 		eph.startReaderThreads();
+		assertTrue(eph.stdoutReaderTask.isCancelled());
+		assertTrue(eph.stderrReaderTask.isCancelled());
 		
-		verifyThrows(() -> check_awaitTermination(eph, false), OperationCancellation.class);
+		check_awaitProcessTermination(eph, OperationCancellation.class, false);
 		assertTrue(eph.isCanceled());
 		// We allow cancellation of the process reader, whilst keeping the process alive
 		assertTrue(eph.process.isAlive() == true);
+		
+		checkReaderThreadsTerminate(eph, false);
 	}
 	
 	public void test_cancellation_vs_interrupt() {
@@ -184,11 +244,23 @@ public class ExternalProcessHelper_Test extends CommonTest {
 		thread.interrupt();
 		
 		// check that EPH is not compromised because of interrupt
-		assertTrue(eph.cancelMonitor.isCanceled() == false);
+		assertTrue(eph.cancelMonitor.isCancelled() == false);
 		assertTrue(eph.process.isAlive());
+		assertTrue(eph.stderrReaderThread.isAlive());
+		assertTrue(eph.mainReaderThread.isAlive());
 		
 		eph.process.destroy();
-		verifyThrows(() -> check_awaitTermination(eph, false), null);
+		check_awaitProcessTermination(eph, null, true);
+	}
+	
+	/* -----------------  ----------------- */
+	
+	protected static void checkThreadJoin(Thread thread) {
+		try {
+			thread.join();
+		} catch(InterruptedException e) {
+			assertFail();
+		}
 	}
 	
 }
