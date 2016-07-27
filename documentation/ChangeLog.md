@@ -1,6 +1,7 @@
 ## release ChangeLog
 
 ### (NextVersion)
+* Added support for Open Type (`Ctrl+Shift+T`)
 
 ### 0.6.2
  * Updated minimum CDT to version `9.0` (Eclipse Neon).
