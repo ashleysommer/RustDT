@@ -96,8 +96,6 @@ public class RustIndexManager extends IndexManager {
 	}
 	
 	private void enqueueFileRemovedTask(Location location) {
-		System.out.println("RustIndexManager - File removed: " + location);
-		
 		StructureInfo structureInfo = getOrCreateStructureInfo(location);
 		RustStructureUpdateTask indexUpdateTask = new RustStructureFileRemovedTask(structureInfo, location);
 		
@@ -106,8 +104,6 @@ public class RustIndexManager extends IndexManager {
 	}
 	
 	private void enqueueFileTouchedTask(Location location) {
-		System.out.println("RustIndexManager - File touched: " + location);
-		
 		StructureInfo structureInfo = getOrCreateStructureInfo(location);
 		
 		SourceProvider sourceProvider = () -> FileUtil.readFileContents(location, StringUtil.UTF8);
