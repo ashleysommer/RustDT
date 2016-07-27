@@ -154,6 +154,7 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	protected void prepareNavigateMenu(IMenuManager menu) {
 		IMenuManager navigateMenu = menu.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
 		if(navigateMenu != null) {
+			navigateMenu.appendToGroup(IWorkbenchActionConstants.SHOW_EXT, pushItem(EditorCommandIds.OpenType));
 			navigateMenu.appendToGroup(IWorkbenchActionConstants.SHOW_EXT, pushItem(EditorCommandIds.QuickOutline));
 		}
 		
