@@ -1,9 +1,9 @@
 package com.github.rustdt.ide.core.engine;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -21,7 +21,6 @@ import melnorme.lang.ide.core.engine.IndexManager;
 import melnorme.lang.ide.core.engine.StructureResult;
 import melnorme.lang.ide.core.utils.ResourceUtils;
 import melnorme.lang.tooling.structure.GlobalSourceStructure;
-import melnorme.lang.tooling.structure.SourceFileStructure;
 import melnorme.lang.tooling.structure.StructureElement;
 import melnorme.utilbox.misc.FileUtil;
 import melnorme.utilbox.misc.Location;
@@ -30,7 +29,7 @@ import melnorme.utilbox.misc.StringUtil;
 public class RustIndexManager extends IndexManager {
 	private final GlobalSourceStructure sourceStructure = new GlobalSourceStructure();
 	
-	private final Map<Location, StructureInfo> startedIndexUpdates = new HashMap<>();
+	private final Map<Location, StructureInfo> startedIndexUpdates = new ConcurrentHashMap<>();
 	
 	private final IResourceChangeListener resourcesChanged = this::processResourceChangeEvent;
 	
@@ -131,10 +130,11 @@ public class RustIndexManager extends IndexManager {
 	private class StructureInfo extends StructureResult<StructureInfo> {
 		@Override
 		protected void doHandleDataChanged() {
-			Optional<SourceFileStructure> structure = super.getStructure();
-			if(structure.isPresent()) {
-				sourceStructure.updateIndex(structure.get());
-			}
+			getStructure().ifPresent(
+				structure -> {
+					sourceStructure.updateIndex(structure);
+					structure.getLocation().ifPresent(startedIndexUpdates::remove);
+				});
 		}
 	}
 	
