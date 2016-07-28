@@ -12,7 +12,6 @@ package melnorme.lang.ide.ui.editor.actions;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import melnorme.lang.ide.core.LangCore;
@@ -21,6 +20,7 @@ import melnorme.lang.ide.ui.editor.AbstractLangEditor;
 import melnorme.lang.ide.ui.editor.LangEditorMessages;
 import melnorme.lang.ide.ui.editor.structure.EditorStructureUtil;
 import melnorme.lang.ide.ui.utils.operations.BasicEditorOperation;
+import melnorme.lang.ide.ui.views.EnhancedSelectionDialog;
 import melnorme.utilbox.core.CommonException;
 
 public class OpenTypeHandler extends AbstractEditorHandler {
@@ -33,9 +33,13 @@ public class OpenTypeHandler extends AbstractEditorHandler {
 		return new BasicEditorOperation(LangEditorMessages.QuickOutline_title, editor) {
 			@Override
 			protected void doRunWithEditor(AbstractLangEditor editor) throws CommonException {
-				ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(),
-					LangUIPlugin_Actual.getStructureElementLabelProvider());
+				EnhancedSelectionDialog dialog = new EnhancedSelectionDialog(
+					getShell(), LangUIPlugin_Actual.getStructureElementLabelProvider());
+				
 				dialog.setTitle("Open Type");
+				dialog.setHelpAvailable(false);
+				dialog.setMatchEmptyString(false);
+				dialog.setMessage("Enter type name prefix or pattern (*, ? or camel case):");
 				dialog.setElements(LangCore.getIndexManager().getGlobalSourceStructure().toArray());
 				dialog.open();
 				try {

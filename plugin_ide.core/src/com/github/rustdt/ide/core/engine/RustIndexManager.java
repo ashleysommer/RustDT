@@ -62,7 +62,7 @@ public class RustIndexManager extends IndexManager {
 	
 	private void processResourceChangeEvent(IResourceChangeEvent event) {
 		try {
-			event.getDelta().accept(RustIndexManager.this::applyResourceDelta);
+			event.getDelta().accept(this::applyResourceDelta);
 		} catch(Exception e) {
 			LangCore.logError("Could not update Rust type index", e);
 		}
@@ -91,8 +91,7 @@ public class RustIndexManager extends IndexManager {
 	}
 	
 	private static boolean isValidRustPath(IResource resource) {
-		String path = resource.getFullPath().toString();
-		return path.endsWith(".rs");
+		return resource.getFullPath().toString().endsWith(".rs");
 	}
 	
 	private void enqueueFileRemovedTask(Location location) {
