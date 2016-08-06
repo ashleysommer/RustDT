@@ -8,12 +8,9 @@
  * Contributors:
  *     Bruno Medeiros - initial API and implementation
  *******************************************************************************/
-package melnorme.utilbox.fields.validation;
+package melnorme.lang.tooling.engine;
 
-import java.util.Optional;
 
-public interface IDetailsMessage {
-	
-	Optional<String> getDetailsMessage2();
+public interface ILanguageEngine {
 	
 }
