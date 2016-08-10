@@ -11,15 +11,12 @@
 package melnorme.lang.tooling.structure;
 
 import melnorme.lang.tooling.common.ParserError;
-import melnorme.lang.tooling.structure.StructureElement;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.misc.Location;
 
 public class SourceFileStructure extends SourceFileStructure_Default {
-	
 	public SourceFileStructure(Location location, Indexable<StructureElement> children,
 			Indexable<ParserError> parserProblems) {
 		super(location, children, parserProblems);
 	}
-	
 }

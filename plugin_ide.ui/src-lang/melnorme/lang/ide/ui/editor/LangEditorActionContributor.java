@@ -10,7 +10,6 @@
  *******************************************************************************/
 package melnorme.lang.ide.ui.editor;
 
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -30,6 +29,7 @@ import melnorme.lang.ide.ui.editor.EditorUtils.OpenNewEditorMode;
 import melnorme.lang.ide.ui.editor.actions.AbstractEditorHandler;
 import melnorme.lang.ide.ui.editor.actions.GoToMatchingBracketHandler;
 import melnorme.lang.ide.ui.editor.actions.OpenQuickOutlineHandler;
+import melnorme.lang.ide.ui.editor.actions.OpenTypeHandler;
 import melnorme.lang.ide.ui.editor.actions.ToggleCommentHandler;
 import melnorme.lang.ide.ui.utils.operations.AbstractEditorOperation2;
 import melnorme.lang.ide.ui.utils.operations.BasicUIOperation;
@@ -40,7 +40,7 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	
 	public static final String SOURCE_MENU_ID = LangUIPlugin.PLUGIN_ID + ".sourceMenu";
 	
-	protected final ArrayList2<IHandlerActivation> handlerActivations = new ArrayList2<>(); 
+	protected final ArrayList2<IHandlerActivation> handlerActivations = new ArrayList2<>();
 	
 	public LangEditorActionContributor() {
 		super();
@@ -55,7 +55,7 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	public final void dispose() {
 		doDispose();
 		
-		for (IHandlerActivation handlerActivation : handlerActivations) {
+		for(IHandlerActivation handlerActivation : handlerActivations) {
 			getHandlerService_2().deactivateHandler(handlerActivation);
 		}
 		
@@ -65,7 +65,7 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	protected void doDispose() {
 	}
 	
-	/* ----------------- Register handlers ----------------- */ 
+	/* ----------------- Register handlers ----------------- */
 	
 	@Override
 	public void init(IActionBars bars) {
@@ -78,6 +78,7 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 		activateHandler(EditorCommandIds.ToggleComment, getHandler_ToggleComment());
 		
 		activateHandler(EditorCommandIds.QuickOutline, getHandler_QuickOutline());
+		activateHandler(EditorCommandIds.OpenType, getHandler_OpenType());
 		
 		activateHandler(EditorCommandIds.Format, getHandler_Format());
 		
@@ -119,6 +120,10 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 		return new OpenQuickOutlineHandler(getPage());
 	}
 	
+	protected AbstractHandler getHandler_OpenType() {
+		return new OpenTypeHandler(getPage());
+	}
+	
 	public AbstractEditorHandler getHandler_Format() {
 		return getEditorHandler(getOpCreator_Format());
 	}
@@ -149,6 +154,7 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	protected void prepareNavigateMenu(IMenuManager menu) {
 		IMenuManager navigateMenu = menu.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
 		if(navigateMenu != null) {
+			navigateMenu.appendToGroup(IWorkbenchActionConstants.SHOW_EXT, pushItem(EditorCommandIds.OpenType));
 			navigateMenu.appendToGroup(IWorkbenchActionConstants.SHOW_EXT, pushItem(EditorCommandIds.QuickOutline));
 		}
 		
@@ -161,15 +167,15 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	}
 	
 	protected void prepareEditMenu(IMenuManager menu) {
-		IMenuManager editMenu= menu.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
+		IMenuManager editMenu = menu.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
 		if(editMenu != null) {
 			editMenu.appendToGroup(ITextEditorActionConstants.GROUP_ASSIST, pushItem(
-				ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS, 
-				ITextEditorActionConstants.CONTENT_ASSIST));
+					ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS,
+					ITextEditorActionConstants.CONTENT_ASSIST));
 			
 			editMenu.appendToGroup(ITextEditorActionConstants.GROUP_ASSIST, pushItem(
-				ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION, 
-				ITextEditorActionConstants.CONTENT_ASSIST_CONTEXT_INFORMATION));
+					ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION,
+					ITextEditorActionConstants.CONTENT_ASSIST_CONTEXT_INFORMATION));
 		}
 		
 	}
@@ -177,9 +183,9 @@ public abstract class LangEditorActionContributor extends LangEditorActionContri
 	protected void prepareSourceMenu(IMenuManager menu) {
 		IMenuManager sourceMenu = menu.findMenuUsingPath(SOURCE_MENU_ID);
 		if(sourceMenu == null) {
-			// This structure should have been created declaratively by plugin.xml, 
+			// This structure should have been created declaratively by plugin.xml,
 			LangCore.logError("Source menu " + SOURCE_MENU_ID + " not created by plugin.xml!");
-
+			
 			// We can create it programmatically, by other plugin.xml declarative menu contribution will
 			// fail to find the menu because it will be created too late.
 			sourceMenu = LangEditorContextMenuContributor.createSourceMenuSkeleton();

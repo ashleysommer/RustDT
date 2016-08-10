@@ -14,6 +14,8 @@ import static melnorme.utilbox.core.Assert.AssertNamespace.assertNotNull;
 import static melnorme.utilbox.core.CoreUtil.areEqual;
 import static melnorme.utilbox.core.CoreUtil.nullToEmpty;
 
+import java.util.Optional;
+
 import melnorme.lang.tooling.common.ParserError;
 import melnorme.utilbox.collections.Indexable;
 import melnorme.utilbox.misc.HashcodeUtil;
@@ -24,8 +26,8 @@ public abstract class SourceFileStructure_Default extends AbstractStructureConta
 	protected final Location location;
 	protected final Indexable<ParserError> parserProblems;
 	
-	public SourceFileStructure_Default(Location location, Indexable<StructureElement> children, 
-			Indexable<ParserError> parserProblems) {
+	public SourceFileStructure_Default(
+		Location location, Indexable<StructureElement> children, Indexable<ParserError> parserProblems) {
 		super(children);
 		this.location = location;
 		this.parserProblems = nullToEmpty(parserProblems);
@@ -38,8 +40,7 @@ public abstract class SourceFileStructure_Default extends AbstractStructureConta
 		
 		SourceFileStructure other = (SourceFileStructure) obj;
 		
-		return 
-			areEqual(location, other.location) &&
+		return areEqual(location, other.location) &&
 			areEqual(children, other.children);
 	}
 	
@@ -50,14 +51,14 @@ public abstract class SourceFileStructure_Default extends AbstractStructureConta
 	
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + (location == null ? "" : " " + location); 
+		return getClass().getSimpleName() + (location == null ? "" : " " + location);
 	}
 	
 	/* -----------------  ----------------- */
 	
 	@Override
-	public Location getLocation() {
-		return location;
+	public Optional<Location> getLocation() {
+		return Optional.ofNullable(location);
 	}
 	
 	@Override

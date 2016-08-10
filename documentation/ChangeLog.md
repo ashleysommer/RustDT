@@ -1,6 +1,7 @@
 ## release ChangeLog
 
 ### (NextVersion)
+ * Added support for Open Type (`Ctrl+Shift+T`)
  * Fixed editor NPE when opening files from a non-workspace VCS revision. 
 
 ### 0.6.2

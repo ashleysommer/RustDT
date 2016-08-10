@@ -10,15 +10,6 @@
  *******************************************************************************/
 package melnorme.lang.ide.ui.editor.structure;
 
-
-import melnorme.lang.ide.core.EclipseCore;
-import melnorme.lang.ide.core.LangCore;
-import melnorme.lang.ide.ui.LangUIPlugin;
-import melnorme.lang.ide.ui.text.AbstractLangBasicSourceViewerConfiguration;
-import melnorme.lang.ide.ui.views.AbstractFilteredTreePopupControl;
-import melnorme.lang.ide.ui.views.StructureElementLabelProvider;
-import melnorme.lang.tooling.structure.ISourceFileStructure;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IInformationControl;
@@ -28,6 +19,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
 import _org.eclipse.jdt.internal.ui.util.StringMatcher;
+import melnorme.lang.ide.core.EclipseCore;
+import melnorme.lang.ide.core.LangCore;
+import melnorme.lang.ide.ui.LangUIPlugin;
+import melnorme.lang.ide.ui.text.AbstractLangBasicSourceViewerConfiguration;
+import melnorme.lang.ide.ui.views.AbstractFilteredTreePopupControl;
+import melnorme.lang.ide.ui.views.StructureElementLabelProvider;
+import melnorme.lang.tooling.structure.ISourceFileStructure;
 
 public abstract class LangOutlineInformationControl extends AbstractFilteredTreePopupControl {
 	
@@ -77,7 +75,7 @@ public abstract class LangOutlineInformationControl extends AbstractFilteredTree
 			try {
 				dispose();
 				EditorStructureUtil.openInEditorAndReveal(selectedElement);
-			} catch (CoreException ce) {
+			} catch(CoreException ce) {
 				EclipseCore.logStatus(ce);
 			}
 		}

@@ -16,16 +16,15 @@ import java.util.HashMap;
 
 import org.eclipse.core.resources.IProject;
 
-import melnorme.lang.ide.core.engine.SourceModelManager.StructureUpdateTask;
 import melnorme.lang.ide.core.operations.ILangOperationsListener_Default.IToolOperationMonitor;
 import melnorme.lang.ide.core.operations.ILangOperationsListener_Default.ProcessStartKind;
 import melnorme.lang.ide.core.operations.build.BuildManager;
 import melnorme.lang.tooling.common.ops.IOperationMonitor.NullOperationMonitor;
 import melnorme.lang.utils.concurrency.MonitorRunnableFuture;
+import melnorme.utilbox.concurrency.CompletableResult.CompletableLatch;
 import melnorme.utilbox.concurrency.ICancelMonitor;
 import melnorme.utilbox.concurrency.ICommonExecutor;
 import melnorme.utilbox.concurrency.OperationCancellation;
-import melnorme.utilbox.concurrency.CompletableResult.CompletableLatch;
 import melnorme.utilbox.core.CommonException;
 
 abstract class AbstractProjectReconcileManager {
@@ -103,7 +102,7 @@ abstract class AbstractProjectReconcileManager {
 			fileSaveLatch.awaitResult();
 			
 			if(structureUpdateTask != null) {
-				structureUpdateTask.structureInfo.awaitUpdatedData();
+				structureUpdateTask.awaitUpdatedData();
 			}
 		}
 		

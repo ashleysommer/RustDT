@@ -79,7 +79,7 @@ public class RustParseDescribeParser extends AbstractStructureParser {
 	
 	/* -----------------  ----------------- */
 	
-	protected ArrayList2<StructureElement> parseStructureElements(TextBlocksSubReader subReader) 
+	protected ArrayList2<StructureElement> parseStructureElements(TextBlocksSubReader subReader)
 			throws CommonException {
 		ArrayList2<StructureElement> elements = parseSubElements(subReader, this::parseStructureElement);
 		
@@ -88,7 +88,7 @@ public class RustParseDescribeParser extends AbstractStructureParser {
 		return reorganizedChildren;
 	}
 	
-	protected <RET> ArrayList2<RET> parseSubElements(TextBlocksSubReader subReader, 
+	protected <RET> ArrayList2<RET> parseSubElements(TextBlocksSubReader subReader,
 			BlockVisitorX<RET, CommonException> elementParser) throws CommonException {
 		ArrayList2<RET> children = new ArrayList2<>();
 		
@@ -161,7 +161,7 @@ public class RustParseDescribeParser extends AbstractStructureParser {
 		}
 	}
 	
-	protected StructureElement consumeStructureElement(TextBlocksSubReader reader, String kind) 
+	protected StructureElement consumeStructureElement(TextBlocksSubReader reader, String kind)
 			throws CommonException {
 		StructureElementKind elementKind = parseElementKind(kind);
 		
@@ -264,7 +264,7 @@ public class RustParseDescribeParser extends AbstractStructureParser {
 		case "priv":
 		case "private":
 			return EProtection.PRIVATE;
-		default: 
+		default:
 			reportError("Unknown protection `{0}`.", consumeText);
 			return null;
 		}
